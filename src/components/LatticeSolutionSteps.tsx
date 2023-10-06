@@ -22,7 +22,16 @@ interface SolutionStep {
   totalsLeft: number[];
 }
 
-const SolutionStepView = (props) => {
+type SolutionStepViewProps = {
+  currentStep: number;
+  gridSubsteps: number;
+  currentSolutionStep: SolutionStep;
+  multiplicand: number;
+  multiplier: number;
+  solution: number[];
+};
+
+const SolutionStepView = (props: SolutionStepViewProps) => {
   const isGridSubstep =
     props.currentStep >= 4 && props.currentStep < 4 + props.gridSubsteps;
   const colIndex =
@@ -33,7 +42,10 @@ const SolutionStepView = (props) => {
   const rowIndex =
     props.currentSolutionStep &&
     (props.currentStep - 4) % props.currentSolutionStep.multiplier.length;
-  const row = isGridSubstep && props.currentSolutionStep.lattice[colIndex];
+  const row =
+    isGridSubstep &&
+    props.currentSolutionStep.lattice &&
+    props.currentSolutionStep.lattice[colIndex];
   const digits = isGridSubstep && row && row[rowIndex];
 
   return (
@@ -258,8 +270,8 @@ function LatticeSolutionSteps({
             key={index}
           >
             <SolutionStepView
-              multiplicand={step.multiplicand}
-              multiplier={step.multiplier}
+              multiplicand={multiplicand}
+              multiplier={multiplier}
               currentStep={index}
               currentSolutionStep={step}
               solution={solution}
