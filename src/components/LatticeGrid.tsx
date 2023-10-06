@@ -3,13 +3,39 @@ import { Box, Flex, Text } from "@chakra-ui/react";
 interface LatticeGridProps {
   multiplicand: number;
   multiplier: number;
-  lattice: number[][];
+  lattice: number[][][];
+  totalsBottom: number[];
+  totalsLeft: number[];
 }
 
-function LatticeGrid({ multiplicand, multiplier, lattice }: LatticeGridProps) {
+const CellDiagonal = ({ diagonalLength }: { diagonalLength: number }) => (
+  <Box
+    position="absolute"
+    bottom={0}
+    left={0}
+    height={`${diagonalLength + 1}px`}
+    width={`${diagonalLength + 1}px`}
+    borderLeft="2px"
+    borderColor="gray.400"
+    transformOrigin="bottom left"
+    transform={`translate(43px, -40px) rotate(-135deg) translate(0px, 0px)`}
+    marginLeft="-1px"
+  />
+);
+
+function LatticeGrid({
+  multiplicand,
+  multiplier,
+  lattice,
+  totalsBottom,
+  totalsLeft,
+}: LatticeGridProps) {
   const multiplicandDigits = multiplicand.toString().split("").map(Number);
   const multiplierDigits = multiplier.toString().split("").map(Number);
-  const numColumns = multiplicandDigits.length + multiplierDigits.length - 1;
+  const numColumns = multiplicandDigits.length;
+  const numRows = multiplierDigits.length;
+  const cellSize = 40;
+  const diagonalLength = Math.sqrt(cellSize * cellSize * 2);
 
   return (
     <Box>
@@ -18,87 +44,129 @@ function LatticeGrid({ multiplicand, multiplier, lattice }: LatticeGridProps) {
       </Text>
       <Flex direction="column" align="center" justify="center">
         <Flex direction="row" align="center" justify="center">
+          <Box w={`${cellSize}px`} h={`${cellSize}px`} />
           {multiplicandDigits.map((digit, index) => (
-            <Box key={index} w="20px" h="20px" bg="yellow.200">
-              <Text fontSize="sm" fontWeight="bold">
+            <Box
+              key={index}
+              w={`${cellSize}px`}
+              h={`${cellSize}px`}
+              display="flex"
+              alignItems="flex-end"
+            >
+              <Text
+                fontSize="sm"
+                fontWeight="bold"
+                width="100%"
+                textAlign="center"
+              >
                 {digit}
               </Text>
             </Box>
           ))}
+          <Box w={`${cellSize}px`} h={`${cellSize}px`} />
         </Flex>
-        {[...Array(numColumns)].map((_, index) => (
-          <Flex key={index} direction="row" align="center" justify="center">
-            {multiplierDigits.map((digit, innerIndex) => {
-              const row = index - innerIndex;
-              const col = innerIndex;
-              if (
-                row < 0 ||
-                row >= multiplicandDigits.length ||
-                col < 0 ||
-                col >= multiplierDigits.length
-              ) {
-                return <Box key={innerIndex} w="20px" h="20px" />;
-              } else if (row === col) {
+        {[...Array(numRows + 1)].map((_, rowIndex) => {
+          const digit = multiplierDigits[rowIndex];
+          return (
+            <Flex
+              key={rowIndex}
+              direction="row"
+              align="center"
+              justify="center"
+            >
+              <Box
+                w={`${cellSize}px`}
+                h={`${cellSize}px`}
+                position="relative"
+                overflow="hidden"
+              >
+                <Text
+                  fontSize="sm"
+                  fontWeight="bold"
+                  position="absolute"
+                  top={`${cellSize * 0.75}px`}
+                  left={`${cellSize * 0.75}px`}
+                  transform="translate(-50%, -50%)"
+                >
+                  {rowIndex < numRows && totalsLeft[rowIndex]}
+                </Text>
+                <CellDiagonal
+                  diagonalLength={diagonalLength / 2}
+                ></CellDiagonal>
+              </Box>
+              {[...Array(numColumns)].map((_, colIndex) => {
+                const row = rowIndex;
+                const col = colIndex;
+
                 return (
                   <Box
-                    key={innerIndex}
-                    w="20px"
-                    h="20px"
-                    bg="gray.200"
-                    borderWidth="1px"
+                    key={colIndex}
+                    w={`${cellSize}px`}
+                    h={`${cellSize}px`}
+                    bg={lattice[col] && lattice[col][row] ? "gray.200" : ""}
+                    borderWidth={lattice[col] && lattice[col][row] ? "1px" : 0}
                     borderColor="gray.400"
-                  />
-                );
-              } else if (row < col) {
-                return (
-                  <Box
-                    key={innerIndex}
-                    w="20px"
-                    h="20px"
-                    bg="gray.200"
-                    borderWidth="1px"
-                    borderColor="gray.400"
+                    position="relative"
+                    overflow="hidden"
                   >
-                    <Text fontSize="sm" fontWeight="bold">
-                      {lattice[row][col - row]}
-                    </Text>
+                    {lattice[col] && lattice[col][row] && (
+                      <>
+                        <Text
+                          fontSize="sm"
+                          fontWeight="bold"
+                          position="absolute"
+                          top={`${cellSize * 0.25}px`}
+                          left={`${cellSize * 0.25}px`}
+                          transform="translate(-50%, -50%)"
+                        >
+                          {lattice[col][row][0]}
+                        </Text>
+                        <Text
+                          fontSize="sm"
+                          fontWeight="bold"
+                          fontStyle="italic"
+                          position="absolute"
+                          top={`${cellSize * 0.75}px`}
+                          left={`${cellSize * 0.75}px`}
+                          transform="translate(-50%, -50%)"
+                        >
+                          {lattice[col][row][1]}
+                        </Text>
+                      </>
+                    )}
+                    {row === numRows && (
+                      <Text
+                        fontSize="sm"
+                        fontWeight="bold"
+                        position="absolute"
+                        top={`${cellSize * 0.25}px`}
+                        left={`${cellSize * 0.25}px`}
+                        transform="translate(-50%, -50%)"
+                      >
+                        {totalsBottom[colIndex]}
+                      </Text>
+                    )}
+                    <CellDiagonal
+                      diagonalLength={
+                        row === numRows ? diagonalLength / 2 : diagonalLength
+                      }
+                    ></CellDiagonal>
                   </Box>
                 );
-              } else {
-                return (
-                  <Box
-                    key={innerIndex}
-                    w="20px"
-                    h="20px"
-                    bg="gray.200"
-                    borderWidth="1px"
-                    borderColor="gray.400"
-                  >
-                    <Text fontSize="sm" fontWeight="bold">
-                      {lattice[row][col + multiplicandDigits.length - row - 1]}
-                    </Text>
-                  </Box>
-                );
-              }
-            })}
-          </Flex>
-        ))}
-      </Flex>
-      <Flex direction="row" align="center" justify="center">
-        {multiplierDigits.map((digit, index) => (
-          <Box
-            key={index}
-            w="20px"
-            h="20px"
-            bg="gray.200"
-            borderWidth="1px"
-            borderColor="gray.400"
-          >
-            <Text fontSize="sm" fontWeight="bold">
-              {digit}
-            </Text>
-          </Box>
-        ))}
+              })}
+              <Box
+                w={`${cellSize}px`}
+                h={`${cellSize}px`}
+                display="flex"
+                alignItems="center"
+              >
+                <Text fontSize="sm" fontWeight="bold" marginLeft={1}>
+                  {digit}
+                </Text>
+              </Box>
+            </Flex>
+          );
+        })}
       </Flex>
     </Box>
   );

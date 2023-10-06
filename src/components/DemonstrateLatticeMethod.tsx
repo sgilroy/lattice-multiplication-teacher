@@ -1,11 +1,11 @@
 import { Box, Flex, IconButton, Input, Text } from "@chakra-ui/react";
 import { useState } from "react";
 import { FaRandom } from "react-icons/fa";
-import LatticeSolver from "./LatticeSolver";
+import LatticeSolutionSteps from "./LatticeSolutionSteps";
 
 function DemonstrateLatticeMethod() {
-  const [multiplicand, setMultiplicand] = useState<number | "">("");
-  const [multiplier, setMultiplier] = useState<number | "">("");
+  const [multiplicand, setMultiplicand] = useState<number | "">(321);
+  const [multiplier, setMultiplier] = useState<number | "">(12);
 
   const handleRandomize = () => {
     const randomMultiplicand = Math.floor(Math.random() * 9900) + 100;
@@ -45,7 +45,10 @@ function DemonstrateLatticeMethod() {
         </Flex>
       </Flex>
       {multiplicand && multiplier && (
-        <LatticeSolver multiplicand={multiplicand} multiplier={multiplier} />
+        <LatticeSolutionSteps
+          multiplicand={multiplicand}
+          multiplier={multiplier}
+        />
       )}
     </Box>
   );
