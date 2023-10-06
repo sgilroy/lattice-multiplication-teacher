@@ -120,7 +120,6 @@ function LatticeGrid({
                         {!Number.isNaN(lattice[col][row][0]) && (
                           <Text
                             fontSize="sm"
-                            fontWeight="bold"
                             position="absolute"
                             top={`${cellSize * 0.25}px`}
                             left={`${cellSize * 0.25}px`}
@@ -132,8 +131,6 @@ function LatticeGrid({
                         {!Number.isNaN(lattice[col][row][1]) && (
                           <Text
                             fontSize="sm"
-                            fontWeight="bold"
-                            fontStyle="italic"
                             position="absolute"
                             top={`${cellSize * 0.75}px`}
                             left={`${cellSize * 0.75}px`}
