@@ -36,8 +36,6 @@ const SolutionStepView = (props) => {
   const row = isGridSubstep && props.currentSolutionStep.lattice[colIndex];
   const digits = isGridSubstep && row && row[rowIndex];
 
-  console.log("currentStep", props.currentStep, props.currentSolutionStep);
-
   return (
     <>
       {props.currentSolutionStep && (
@@ -49,45 +47,44 @@ const SolutionStepView = (props) => {
           totalsLeft={props.currentSolutionStep.totalsLeft}
         />
       )}
-      {props.currentStep > 0 && (
-        <Box fontSize="lg" mt={4}>
-          <Text fontWeight="bold">Step {props.currentStep}:</Text>
-          {props.currentStep === 1 &&
-            ` Write the multiplicand ${props.multiplicand} along the top`}
-          {props.currentStep === 2 &&
-            ` Write the multiplier ${props.multiplier} along the right side`}
-          {props.currentStep === 3 && ` Draw the grid`}
-          {isGridSubstep && (
-            <>
-              Multiply each digit of the multiplicand by each digit of the
-              multiplier
-              <br />
-              <Flex direction="row" key={colIndex} gap={1} ml={4}>
-                <Text fontSize="sm" fontWeight="bold">
-                  {props.currentSolutionStep.multiplicand[colIndex]} *{" "}
-                  {props.currentSolutionStep.multiplier[rowIndex]} ={" "}
-                </Text>
-                <Text fontSize="sm" fontWeight="bold">
-                  {digits && digits[0]}
-                  {digits && digits[1]}
-                </Text>
-              </Flex>
-            </>
-          )}
-          {props.currentStep === 4 + props.gridSubsteps &&
-            ` Starting from the right, add up the diagonals: ${props.currentSolutionStep.totalsBottom
-              .slice()
-              .reverse()
-              .join(", ")}`}
-          {props.currentStep === 5 + props.gridSubsteps &&
-            ` Continue adding diagonals for the left side, bottom to top: ${props.currentSolutionStep.totalsLeft
-              .slice()
-              .reverse()
-              .join(", ")}`}
-          {props.currentStep === 6 + props.gridSubsteps &&
-            ` Write out the solution: ${props.solution.join("")}`}
-        </Box>
-      )}
+      <Box fontSize="lg" mt={4}>
+        <Text fontWeight="bold">Step {props.currentStep}:</Text>
+        {props.currentStep === 0 && ` Make space for the numbers and the grid`}
+        {props.currentStep === 1 &&
+          ` Write the multiplicand ${props.multiplicand} along the top`}
+        {props.currentStep === 2 &&
+          ` Write the multiplier ${props.multiplier} along the right side`}
+        {props.currentStep === 3 && ` Draw the grid`}
+        {isGridSubstep && (
+          <>
+            Multiply each digit of the multiplicand by each digit of the
+            multiplier
+            <br />
+            <Flex direction="row" key={colIndex} gap={1} ml={4}>
+              <Text fontSize="sm" fontWeight="bold">
+                {props.currentSolutionStep.multiplicand[colIndex]} *{" "}
+                {props.currentSolutionStep.multiplier[rowIndex]} ={" "}
+              </Text>
+              <Text fontSize="sm" fontWeight="bold">
+                {digits && digits[0]}
+                {digits && digits[1]}
+              </Text>
+            </Flex>
+          </>
+        )}
+        {props.currentStep === 4 + props.gridSubsteps &&
+          ` Starting from the right, add up the diagonals: ${props.currentSolutionStep.totalsBottom
+            .slice()
+            .reverse()
+            .join(", ")}`}
+        {props.currentStep === 5 + props.gridSubsteps &&
+          ` Continue adding diagonals for the left side, bottom to top: ${props.currentSolutionStep.totalsLeft
+            .slice()
+            .reverse()
+            .join(", ")}`}
+        {props.currentStep === 6 + props.gridSubsteps &&
+          ` Write out the solution: ${props.solution.join("")}`}
+      </Box>
     </>
   );
 };
@@ -166,7 +163,6 @@ function LatticeSolutionSteps({
         totalsLeft: [],
       };
       if (i >= 3) {
-        console.log("latice", i, multiplicandDigits, multiplierDigits);
         step.lattice = multiplicandDigits.map(() =>
           multiplierDigits.map(() => [NaN, NaN])
         );
@@ -177,12 +173,6 @@ function LatticeSolutionSteps({
           const product = multiplicandDigits[col] * multiplierDigits[row];
           step.lattice[col][row][0] = Math.floor(product / 10);
           step.lattice[col][row][1] = product % 10;
-          console.log(
-            "col, row",
-            col,
-            row,
-            `[${step.lattice[col][row][0]}, ${step.lattice[col][row][1]}]`
-          );
         }
       }
       if (i >= 4 + gridSubsteps) {
