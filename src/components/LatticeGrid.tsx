@@ -1,8 +1,8 @@
 import { Box, Flex, Text } from "@chakra-ui/react";
 
 interface LatticeGridProps {
-  multiplicand: number;
-  multiplier: number;
+  multiplicand: number[];
+  multiplier: number[];
   lattice: number[][][];
   totalsBottom: number[];
   totalsLeft: number[];
@@ -30,22 +30,17 @@ function LatticeGrid({
   totalsBottom,
   totalsLeft,
 }: LatticeGridProps) {
-  const multiplicandDigits = multiplicand.toString().split("").map(Number);
-  const multiplierDigits = multiplier.toString().split("").map(Number);
-  const numColumns = multiplicandDigits.length;
-  const numRows = multiplierDigits.length;
+  const numColumns = multiplicand.length;
+  const numRows = multiplier.length;
   const cellSize = 40;
   const diagonalLength = Math.sqrt(cellSize * cellSize * 2);
 
   return (
     <Box>
-      <Text fontSize="xl" fontWeight="bold" mb={4}>
-        Lattice Multiplication
-      </Text>
       <Flex direction="column" align="center" justify="center">
         <Flex direction="row" align="center" justify="center">
           <Box w={`${cellSize}px`} h={`${cellSize}px`} />
-          {multiplicandDigits.map((digit, index) => (
+          {multiplicand.map((digit, index) => (
             <Box
               key={index}
               w={`${cellSize}px`}
@@ -53,20 +48,22 @@ function LatticeGrid({
               display="flex"
               alignItems="flex-end"
             >
-              <Text
-                fontSize="sm"
-                fontWeight="bold"
-                width="100%"
-                textAlign="center"
-              >
-                {digit}
-              </Text>
+              {!Number.isNaN(digit) && (
+                <Text
+                  fontSize="sm"
+                  fontWeight="bold"
+                  width="100%"
+                  textAlign="center"
+                >
+                  {digit}
+                </Text>
+              )}
             </Box>
           ))}
           <Box w={`${cellSize}px`} h={`${cellSize}px`} />
         </Flex>
         {[...Array(numRows + 1)].map((_, rowIndex) => {
-          const digit = multiplierDigits[rowIndex];
+          const digit = multiplier[rowIndex];
           return (
             <Flex
               key={rowIndex}
@@ -160,9 +157,11 @@ function LatticeGrid({
                 display="flex"
                 alignItems="center"
               >
-                <Text fontSize="sm" fontWeight="bold" marginLeft={1}>
-                  {digit}
-                </Text>
+                {!Number.isNaN(digit) && (
+                  <Text fontSize="sm" fontWeight="bold" marginLeft={1}>
+                    {digit}
+                  </Text>
+                )}
               </Box>
             </Flex>
           );

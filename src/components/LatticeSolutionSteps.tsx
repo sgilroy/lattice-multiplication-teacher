@@ -14,14 +14,20 @@ interface LatticeSolutionStepsProps {
   multiplier: number;
 }
 
+interface SolutionStep {
+  multiplicand: number[];
+  multiplier: number[];
+  lattice: number[][][];
+  totalsBottom: number[];
+  totalsLeft: number[];
+}
+
 function LatticeSolutionSteps({
   multiplicand,
   multiplier,
 }: LatticeSolutionStepsProps) {
   const [currentStep, setCurrentStep] = useState(0);
-  const [lattice, setLattice] = useState<number[][][]>([]);
-  const [totalsBottom, setTotalsBottom] = useState<number[]>([]);
-  const [totalsLeft, setTotalsLeft] = useState<number[]>([]);
+  const [solutionSteps, setSolutionSteps] = useState<SolutionStep[]>([]);
   const [solution, setSolution] = useState<number[]>([]);
   const [isPlaying, setIsPlaying] = useState(false);
 
@@ -69,10 +75,35 @@ function LatticeSolutionSteps({
     if (carry > 0) {
       solution.unshift(carry);
     }
-    setLattice(lattice);
-    setTotalsBottom(totalsBottom);
-    setTotalsLeft(totalsLeftPadded);
     setSolution(solution);
+
+    const steps: SolutionStep[] = [];
+    for (let i = 0; i <= 7; i++) {
+      const step: SolutionStep = {
+        multiplicand:
+          i >= 1
+            ? multiplicandDigits
+            : Array(multiplicandDigits.length).fill(undefined).map(Number),
+        multiplier:
+          i >= 2
+            ? multiplierDigits
+            : Array(multiplierDigits.length).fill(undefined).map(Number),
+        lattice: [],
+        totalsBottom: [],
+        totalsLeft: [],
+      };
+      if (i >= 4) {
+        step.lattice = lattice;
+      }
+      if (i >= 5) {
+        step.totalsBottom = totalsBottom;
+      }
+      if (i >= 6) {
+        step.totalsLeft = totalsLeftPadded;
+      }
+      steps.push(step);
+    }
+    setSolutionSteps(steps);
   }, [multiplicand, multiplier]);
 
   useEffect(() => {
@@ -112,6 +143,8 @@ function LatticeSolutionSteps({
     setIsPlaying(false);
   };
 
+  const currentSolutionStep = solutionSteps[currentStep];
+
   return (
     <Box>
       <Flex direction="row" align="center" justify="center" mt={4}>
@@ -139,29 +172,39 @@ function LatticeSolutionSteps({
           onClick={handleResetClick}
           disabled={currentStep === 0}
         />
-      </Flex>{" "}
-      <LatticeGrid
-        multiplicand={multiplicand}
-        multiplier={multiplier}
-        lattice={lattice}
-        totalsBottom={totalsBottom}
-        totalsLeft={totalsLeft}
-      />
-      <Text fontSize="lg" fontWeight="bold" mt={4}>
-        Step {currentStep}:
-        {currentStep === 1 &&
-          ` Write the multiplicand ${multiplicand} along the top`}
-        {currentStep === 2 &&
-          ` Write the multiplier ${multiplier} along the right side`}
-        {currentStep === 3 && ` Draw the grid`}
-        {currentStep === 4 &&
-          ` Multiply each digit of the multiplicand by each digit of the multiplier`}
-        {currentStep === 5 &&
-          ` Add up the ones diagonals: ${totalsBottom.join(" + ")}`}
-        {currentStep === 6 &&
-          ` Add up the tens diagonals: ${totalsLeft.join(" + ")}`}
-        {currentStep === 7 && ` Write out the solution: ${solution.join("")}`}
-      </Text>
+      </Flex>
+      {currentSolutionStep && (
+        <LatticeGrid
+          multiplicand={currentSolutionStep.multiplicand}
+          multiplier={currentSolutionStep.multiplier}
+          lattice={currentSolutionStep.lattice}
+          totalsBottom={currentSolutionStep.totalsBottom}
+          totalsLeft={currentSolutionStep.totalsLeft}
+        />
+      )}
+      {currentStep > 0 && (
+        <Text fontSize="lg" fontWeight="bold" mt={4}>
+          Step {currentStep}:
+          {currentStep === 1 &&
+            ` Write the multiplicand ${multiplicand} along the top`}
+          {currentStep === 2 &&
+            ` Write the multiplier ${multiplier} along the right side`}
+          {currentStep === 3 && ` Draw the grid`}
+          {currentStep === 4 &&
+            ` Multiply each digit of the multiplicand by each digit of the multiplier`}
+          {currentStep === 5 &&
+            ` Starting from the right, add up the diagonals: ${currentSolutionStep.totalsBottom
+              .slice()
+              .reverse()
+              .join(", ")}`}
+          {currentStep === 6 &&
+            ` Continue adding diagonals for the left side, bottom to top: ${currentSolutionStep.totalsLeft
+              .slice()
+              .reverse()
+              .join(", ")}`}
+          {currentStep === 7 && ` Write out the solution: ${solution.join("")}`}
+        </Text>
+      )}
     </Box>
   );
 }
