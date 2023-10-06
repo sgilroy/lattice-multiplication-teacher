@@ -30,6 +30,7 @@ function LatticeSolutionSteps({
   const [solutionSteps, setSolutionSteps] = useState<SolutionStep[]>([]);
   const [solution, setSolution] = useState<number[]>([]);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [gridSubsteps, setGridSubsteps] = useState(0);
 
   useEffect(() => {
     const multiplicandDigits = multiplicand.toString().split("").map(Number);
@@ -78,7 +79,9 @@ function LatticeSolutionSteps({
     setSolution(solution);
 
     const steps: SolutionStep[] = [];
-    for (let i = 0; i <= 7; i++) {
+    const gridSubsteps = multiplicandDigits.length * multiplierDigits.length;
+    setGridSubsteps(gridSubsteps);
+    for (let i = 0; i <= 7 + gridSubsteps; i++) {
       const step: SolutionStep = {
         multiplicand:
           i >= 1
@@ -92,14 +95,31 @@ function LatticeSolutionSteps({
         totalsBottom: [],
         totalsLeft: [],
       };
-      if (i >= 4) {
-        step.lattice = lattice;
+      if (i >= 3) {
+        console.log("latice", i, multiplicandDigits, multiplierDigits);
+        step.lattice = multiplicandDigits.map(() =>
+          multiplierDigits.map(() => [NaN, NaN])
+        );
+        // sub steps
+        for (let j = 0; j < Math.min(i - 3, gridSubsteps); j++) {
+          const row = j % multiplierDigits.length;
+          const col = Math.floor(j / multiplierDigits.length);
+          const product = multiplicandDigits[col] * multiplierDigits[row];
+          step.lattice[col][row][0] = Math.floor(product / 10);
+          step.lattice[col][row][1] = product % 10;
+          console.log(
+            "col, row",
+            col,
+            row,
+            `[${step.lattice[col][row][0]}, ${step.lattice[col][row][1]}]`
+          );
+        }
       }
-      if (i >= 5) {
-        step.totalsBottom = totalsBottom;
+      if (i >= 5 + gridSubsteps) {
+        step.totalsBottom = totalsBottom.slice();
       }
-      if (i >= 6) {
-        step.totalsLeft = totalsLeftPadded;
+      if (i >= 6 + gridSubsteps) {
+        step.totalsLeft = totalsLeftPadded.slice();
       }
       steps.push(step);
     }
@@ -110,7 +130,7 @@ function LatticeSolutionSteps({
     let timer: number;
     if (isPlaying) {
       timer = setTimeout(() => {
-        if (currentStep < 7) {
+        if (currentStep < solutionSteps.length - 1) {
           setCurrentStep(currentStep + 1);
         } else {
           setIsPlaying(false);
@@ -132,7 +152,7 @@ function LatticeSolutionSteps({
   };
 
   const handleNextClick = () => {
-    if (currentStep < 7) {
+    if (currentStep < solutionSteps.length - 1) {
       setCurrentStep(currentStep + 1);
       setIsPlaying(false);
     }
@@ -144,7 +164,17 @@ function LatticeSolutionSteps({
   };
 
   const currentSolutionStep = solutionSteps[currentStep];
+  const isGridSubstep = currentStep >= 4 && currentStep < 4 + gridSubsteps;
+  const colIndex =
+    currentSolutionStep &&
+    Math.floor((currentStep - 4) / currentSolutionStep.multiplier.length);
+  const rowIndex =
+    currentSolutionStep &&
+    (currentStep - 4) % currentSolutionStep.multiplier.length;
+  const row = isGridSubstep && currentSolutionStep.lattice[colIndex];
+  const digits = isGridSubstep && row && row[rowIndex];
 
+  console.log("currentStep", currentStep, currentSolutionStep);
   return (
     <Box>
       <Flex direction="row" align="center" justify="center" mt={4}>
@@ -152,25 +182,25 @@ function LatticeSolutionSteps({
           aria-label="Previous"
           icon={<FaStepBackward />}
           onClick={handlePreviousClick}
-          disabled={currentStep === 0 || isPlaying}
+          isDisabled={currentStep === 0 || isPlaying}
         />
         <IconButton
           aria-label={isPlaying ? "Pause" : "Play"}
           icon={isPlaying ? <FaPause /> : <FaPlay />}
           onClick={handlePlayPauseClick}
-          disabled={currentStep === 7}
+          isDisabled={currentStep === solutionSteps.length - 1}
         />
         <IconButton
           aria-label="Next"
           icon={<FaStepForward />}
           onClick={handleNextClick}
-          disabled={currentStep === 7 || isPlaying}
+          isDisabled={currentStep === solutionSteps.length - 1 || isPlaying}
         />
         <IconButton
           aria-label="Reset"
           icon={<FaUndo />}
           onClick={handleResetClick}
-          disabled={currentStep === 0}
+          isDisabled={currentStep === 0}
         />
       </Flex>
       {currentSolutionStep && (
@@ -183,27 +213,43 @@ function LatticeSolutionSteps({
         />
       )}
       {currentStep > 0 && (
-        <Text fontSize="lg" fontWeight="bold" mt={4}>
-          Step {currentStep}:
+        <Box fontSize="lg" mt={4}>
+          <Text fontWeight="bold">Step {currentStep}:</Text>
           {currentStep === 1 &&
             ` Write the multiplicand ${multiplicand} along the top`}
           {currentStep === 2 &&
             ` Write the multiplier ${multiplier} along the right side`}
           {currentStep === 3 && ` Draw the grid`}
-          {currentStep === 4 &&
-            ` Multiply each digit of the multiplicand by each digit of the multiplier`}
-          {currentStep === 5 &&
+          {isGridSubstep && (
+            <>
+              Multiply each digit of the multiplicand by each digit of the
+              multiplier
+              <br />
+              <Flex direction="row" key={colIndex} gap={1} ml={4}>
+                <Text fontSize="sm" fontWeight="bold">
+                  {currentSolutionStep.multiplicand[colIndex]} *{" "}
+                  {currentSolutionStep.multiplier[rowIndex]} ={" "}
+                </Text>
+                <Text fontSize="sm" fontWeight="bold">
+                  {digits && digits[0]}
+                  {digits && digits[1]}
+                </Text>
+              </Flex>
+            </>
+          )}
+          {currentStep === 5 + gridSubsteps &&
             ` Starting from the right, add up the diagonals: ${currentSolutionStep.totalsBottom
               .slice()
               .reverse()
               .join(", ")}`}
-          {currentStep === 6 &&
+          {currentStep === 6 + gridSubsteps &&
             ` Continue adding diagonals for the left side, bottom to top: ${currentSolutionStep.totalsLeft
               .slice()
               .reverse()
               .join(", ")}`}
-          {currentStep === 7 && ` Write out the solution: ${solution.join("")}`}
-        </Text>
+          {currentStep === 7 + gridSubsteps &&
+            ` Write out the solution: ${solution.join("")}`}
+        </Box>
       )}
     </Box>
   );

@@ -108,27 +108,31 @@ function LatticeGrid({
                   >
                     {lattice[col] && lattice[col][row] && (
                       <>
-                        <Text
-                          fontSize="sm"
-                          fontWeight="bold"
-                          position="absolute"
-                          top={`${cellSize * 0.25}px`}
-                          left={`${cellSize * 0.25}px`}
-                          transform="translate(-50%, -50%)"
-                        >
-                          {lattice[col][row][0]}
-                        </Text>
-                        <Text
-                          fontSize="sm"
-                          fontWeight="bold"
-                          fontStyle="italic"
-                          position="absolute"
-                          top={`${cellSize * 0.75}px`}
-                          left={`${cellSize * 0.75}px`}
-                          transform="translate(-50%, -50%)"
-                        >
-                          {lattice[col][row][1]}
-                        </Text>
+                        {!Number.isNaN(lattice[col][row][0]) && (
+                          <Text
+                            fontSize="sm"
+                            fontWeight="bold"
+                            position="absolute"
+                            top={`${cellSize * 0.25}px`}
+                            left={`${cellSize * 0.25}px`}
+                            transform="translate(-50%, -50%)"
+                          >
+                            {lattice[col][row][0]}
+                          </Text>
+                        )}
+                        {!Number.isNaN(lattice[col][row][1]) && (
+                          <Text
+                            fontSize="sm"
+                            fontWeight="bold"
+                            fontStyle="italic"
+                            position="absolute"
+                            top={`${cellSize * 0.75}px`}
+                            left={`${cellSize * 0.75}px`}
+                            transform="translate(-50%, -50%)"
+                          >
+                            {lattice[col][row][1]}
+                          </Text>
+                        )}
                       </>
                     )}
                     {row === numRows && (
