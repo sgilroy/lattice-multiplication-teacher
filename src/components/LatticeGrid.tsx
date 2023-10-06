@@ -1,9 +1,9 @@
-import { Box, Flex, Text } from "@chakra-ui/react";
+import { Box, BoxProps, Flex, Text } from "@chakra-ui/react";
 
 interface LatticeGridProps {
   multiplicand: number[];
   multiplier: number[];
-  lattice: number[][][];
+  lattice?: number[][][];
   totalsBottom: number[];
   totalsLeft: number[];
 }
@@ -29,14 +29,15 @@ function LatticeGrid({
   lattice,
   totalsBottom,
   totalsLeft,
-}: LatticeGridProps) {
+  ...props
+}: LatticeGridProps & BoxProps) {
   const numColumns = multiplicand.length;
   const numRows = multiplier.length;
   const cellSize = 40;
   const diagonalLength = Math.sqrt(cellSize * cellSize * 2);
 
   return (
-    <Box>
+    <Box {...props}>
       <Flex direction="column" align="center" justify="center">
         <Flex direction="row" align="center" justify="center">
           <Box w={`${cellSize}px`} h={`${cellSize}px`} />
@@ -87,9 +88,11 @@ function LatticeGrid({
                 >
                   {rowIndex < numRows && totalsLeft[rowIndex]}
                 </Text>
-                <CellDiagonal
-                  diagonalLength={diagonalLength / 2}
-                ></CellDiagonal>
+                {lattice && (
+                  <CellDiagonal
+                    diagonalLength={diagonalLength / 2}
+                  ></CellDiagonal>
+                )}
               </Box>
               {[...Array(numColumns)].map((_, colIndex) => {
                 const row = rowIndex;
@@ -100,13 +103,19 @@ function LatticeGrid({
                     key={colIndex}
                     w={`${cellSize}px`}
                     h={`${cellSize}px`}
-                    bg={lattice[col] && lattice[col][row] ? "gray.200" : ""}
-                    borderWidth={lattice[col] && lattice[col][row] ? "1px" : 0}
+                    bg={
+                      lattice && lattice[col] && lattice[col][row]
+                        ? "gray.200"
+                        : ""
+                    }
+                    borderWidth={
+                      lattice && lattice[col] && lattice[col][row] ? "1px" : 0
+                    }
                     borderColor="gray.400"
                     position="relative"
                     overflow="hidden"
                   >
-                    {lattice[col] && lattice[col][row] && (
+                    {lattice && lattice[col] && lattice[col][row] && (
                       <>
                         {!Number.isNaN(lattice[col][row][0]) && (
                           <Text
@@ -147,11 +156,13 @@ function LatticeGrid({
                         {totalsBottom[colIndex]}
                       </Text>
                     )}
-                    <CellDiagonal
-                      diagonalLength={
-                        row === numRows ? diagonalLength / 2 : diagonalLength
-                      }
-                    ></CellDiagonal>
+                    {lattice && (
+                      <CellDiagonal
+                        diagonalLength={
+                          row === numRows ? diagonalLength / 2 : diagonalLength
+                        }
+                      ></CellDiagonal>
+                    )}
                   </Box>
                 );
               })}

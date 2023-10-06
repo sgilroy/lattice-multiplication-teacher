@@ -1,4 +1,4 @@
-import { Box, Flex, IconButton, Text } from "@chakra-ui/react";
+import { Box, Button, Flex, IconButton, Text } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import {
   FaPause,
@@ -17,10 +17,80 @@ interface LatticeSolutionStepsProps {
 interface SolutionStep {
   multiplicand: number[];
   multiplier: number[];
-  lattice: number[][][];
+  lattice?: number[][][];
   totalsBottom: number[];
   totalsLeft: number[];
 }
+
+const SolutionStepView = (props) => {
+  const isGridSubstep =
+    props.currentStep >= 4 && props.currentStep < 4 + props.gridSubsteps;
+  const colIndex =
+    props.currentSolutionStep &&
+    Math.floor(
+      (props.currentStep - 4) / props.currentSolutionStep.multiplier.length
+    );
+  const rowIndex =
+    props.currentSolutionStep &&
+    (props.currentStep - 4) % props.currentSolutionStep.multiplier.length;
+  const row = isGridSubstep && props.currentSolutionStep.lattice[colIndex];
+  const digits = isGridSubstep && row && row[rowIndex];
+
+  console.log("currentStep", props.currentStep, props.currentSolutionStep);
+
+  return (
+    <>
+      {props.currentSolutionStep && (
+        <LatticeGrid
+          multiplicand={props.currentSolutionStep.multiplicand}
+          multiplier={props.currentSolutionStep.multiplier}
+          lattice={props.currentSolutionStep.lattice}
+          totalsBottom={props.currentSolutionStep.totalsBottom}
+          totalsLeft={props.currentSolutionStep.totalsLeft}
+        />
+      )}
+      {props.currentStep > 0 && (
+        <Box fontSize="lg" mt={4}>
+          <Text fontWeight="bold">Step {props.currentStep}:</Text>
+          {props.currentStep === 1 &&
+            ` Write the multiplicand ${props.multiplicand} along the top`}
+          {props.currentStep === 2 &&
+            ` Write the multiplier ${props.multiplier} along the right side`}
+          {props.currentStep === 3 && ` Draw the grid`}
+          {isGridSubstep && (
+            <>
+              Multiply each digit of the multiplicand by each digit of the
+              multiplier
+              <br />
+              <Flex direction="row" key={colIndex} gap={1} ml={4}>
+                <Text fontSize="sm" fontWeight="bold">
+                  {props.currentSolutionStep.multiplicand[colIndex]} *{" "}
+                  {props.currentSolutionStep.multiplier[rowIndex]} ={" "}
+                </Text>
+                <Text fontSize="sm" fontWeight="bold">
+                  {digits && digits[0]}
+                  {digits && digits[1]}
+                </Text>
+              </Flex>
+            </>
+          )}
+          {props.currentStep === 4 + props.gridSubsteps &&
+            ` Starting from the right, add up the diagonals: ${props.currentSolutionStep.totalsBottom
+              .slice()
+              .reverse()
+              .join(", ")}`}
+          {props.currentStep === 5 + props.gridSubsteps &&
+            ` Continue adding diagonals for the left side, bottom to top: ${props.currentSolutionStep.totalsLeft
+              .slice()
+              .reverse()
+              .join(", ")}`}
+          {props.currentStep === 6 + props.gridSubsteps &&
+            ` Write out the solution: ${props.solution.join("")}`}
+        </Box>
+      )}
+    </>
+  );
+};
 
 function LatticeSolutionSteps({
   multiplicand,
@@ -31,6 +101,7 @@ function LatticeSolutionSteps({
   const [solution, setSolution] = useState<number[]>([]);
   const [isPlaying, setIsPlaying] = useState(false);
   const [gridSubsteps, setGridSubsteps] = useState(0);
+  const [isAllStepsMode, setIsAllStepsMode] = useState(false);
 
   useEffect(() => {
     const multiplicandDigits = multiplicand.toString().split("").map(Number);
@@ -81,7 +152,7 @@ function LatticeSolutionSteps({
     const steps: SolutionStep[] = [];
     const gridSubsteps = multiplicandDigits.length * multiplierDigits.length;
     setGridSubsteps(gridSubsteps);
-    for (let i = 0; i <= 7 + gridSubsteps; i++) {
+    for (let i = 0; i < 7 + gridSubsteps; i++) {
       const step: SolutionStep = {
         multiplicand:
           i >= 1
@@ -91,7 +162,6 @@ function LatticeSolutionSteps({
           i >= 2
             ? multiplierDigits
             : Array(multiplierDigits.length).fill(undefined).map(Number),
-        lattice: [],
         totalsBottom: [],
         totalsLeft: [],
       };
@@ -115,10 +185,10 @@ function LatticeSolutionSteps({
           );
         }
       }
-      if (i >= 5 + gridSubsteps) {
+      if (i >= 4 + gridSubsteps) {
         step.totalsBottom = totalsBottom.slice();
       }
-      if (i >= 6 + gridSubsteps) {
+      if (i >= 5 + gridSubsteps) {
         step.totalsLeft = totalsLeftPadded.slice();
       }
       steps.push(step);
@@ -163,93 +233,88 @@ function LatticeSolutionSteps({
     setIsPlaying(false);
   };
 
-  const currentSolutionStep = solutionSteps[currentStep];
-  const isGridSubstep = currentStep >= 4 && currentStep < 4 + gridSubsteps;
-  const colIndex =
-    currentSolutionStep &&
-    Math.floor((currentStep - 4) / currentSolutionStep.multiplier.length);
-  const rowIndex =
-    currentSolutionStep &&
-    (currentStep - 4) % currentSolutionStep.multiplier.length;
-  const row = isGridSubstep && currentSolutionStep.lattice[colIndex];
-  const digits = isGridSubstep && row && row[rowIndex];
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      switch (event.key) {
+        case "j":
+          handlePreviousClick();
+          break;
+        case "k":
+          handlePlayPauseClick();
+          break;
+        case "l":
+          handleNextClick();
+          break;
+        default:
+          break;
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [handlePreviousClick, handlePlayPauseClick, handleNextClick]);
 
-  console.log("currentStep", currentStep, currentSolutionStep);
   return (
     <Box>
-      <Flex direction="row" align="center" justify="center" mt={4}>
-        <IconButton
-          aria-label="Previous"
-          icon={<FaStepBackward />}
-          onClick={handlePreviousClick}
-          isDisabled={currentStep === 0 || isPlaying}
-        />
-        <IconButton
-          aria-label={isPlaying ? "Pause" : "Play"}
-          icon={isPlaying ? <FaPause /> : <FaPlay />}
-          onClick={handlePlayPauseClick}
-          isDisabled={currentStep === solutionSteps.length - 1}
-        />
-        <IconButton
-          aria-label="Next"
-          icon={<FaStepForward />}
-          onClick={handleNextClick}
-          isDisabled={currentStep === solutionSteps.length - 1 || isPlaying}
-        />
-        <IconButton
-          aria-label="Reset"
-          icon={<FaUndo />}
-          onClick={handleResetClick}
-          isDisabled={currentStep === 0}
-        />
-      </Flex>
-      {currentSolutionStep && (
-        <LatticeGrid
-          multiplicand={currentSolutionStep.multiplicand}
-          multiplier={currentSolutionStep.multiplier}
-          lattice={currentSolutionStep.lattice}
-          totalsBottom={currentSolutionStep.totalsBottom}
-          totalsLeft={currentSolutionStep.totalsLeft}
-        />
-      )}
-      {currentStep > 0 && (
-        <Box fontSize="lg" mt={4}>
-          <Text fontWeight="bold">Step {currentStep}:</Text>
-          {currentStep === 1 &&
-            ` Write the multiplicand ${multiplicand} along the top`}
-          {currentStep === 2 &&
-            ` Write the multiplier ${multiplier} along the right side`}
-          {currentStep === 3 && ` Draw the grid`}
-          {isGridSubstep && (
-            <>
-              Multiply each digit of the multiplicand by each digit of the
-              multiplier
-              <br />
-              <Flex direction="row" key={colIndex} gap={1} ml={4}>
-                <Text fontSize="sm" fontWeight="bold">
-                  {currentSolutionStep.multiplicand[colIndex]} *{" "}
-                  {currentSolutionStep.multiplier[rowIndex]} ={" "}
-                </Text>
-                <Text fontSize="sm" fontWeight="bold">
-                  {digits && digits[0]}
-                  {digits && digits[1]}
-                </Text>
-              </Flex>
-            </>
-          )}
-          {currentStep === 5 + gridSubsteps &&
-            ` Starting from the right, add up the diagonals: ${currentSolutionStep.totalsBottom
-              .slice()
-              .reverse()
-              .join(", ")}`}
-          {currentStep === 6 + gridSubsteps &&
-            ` Continue adding diagonals for the left side, bottom to top: ${currentSolutionStep.totalsLeft
-              .slice()
-              .reverse()
-              .join(", ")}`}
-          {currentStep === 7 + gridSubsteps &&
-            ` Write out the solution: ${solution.join("")}`}
-        </Box>
+      <Button onClick={() => setIsAllStepsMode(!isAllStepsMode)}>
+        {isAllStepsMode ? "Show One Step" : "Show All Steps"}
+      </Button>
+      {isAllStepsMode ? (
+        solutionSteps.map((step, index) => (
+          <Box
+            border="1px"
+            borderColor="gray.300"
+            marginTop={4}
+            borderRadius={4}
+            key={index}
+          >
+            <SolutionStepView
+              multiplicand={step.multiplicand}
+              multiplier={step.multiplier}
+              currentStep={index}
+              currentSolutionStep={step}
+              solution={solution}
+              gridSubsteps={gridSubsteps}
+            ></SolutionStepView>
+          </Box>
+        ))
+      ) : (
+        <>
+          <Flex direction="row" justify="left" mt={4} gap={3}>
+            <IconButton
+              aria-label="Previous"
+              icon={<FaStepBackward />}
+              onClick={handlePreviousClick}
+              isDisabled={currentStep === 0 || isPlaying}
+            />
+            <IconButton
+              aria-label={isPlaying ? "Pause" : "Play"}
+              icon={isPlaying ? <FaPause /> : <FaPlay />}
+              onClick={handlePlayPauseClick}
+              isDisabled={currentStep === solutionSteps.length - 1}
+            />
+            <IconButton
+              aria-label="Next"
+              icon={<FaStepForward />}
+              onClick={handleNextClick}
+              isDisabled={currentStep === solutionSteps.length - 1 || isPlaying}
+            />
+            <IconButton
+              aria-label="Reset"
+              icon={<FaUndo />}
+              onClick={handleResetClick}
+              isDisabled={currentStep === 0}
+            />
+          </Flex>
+
+          <SolutionStepView
+            multiplicand={multiplicand}
+            multiplier={multiplier}
+            currentStep={currentStep}
+            currentSolutionStep={solutionSteps[currentStep]}
+            solution={solution}
+            gridSubsteps={gridSubsteps}
+          ></SolutionStepView>
+        </>
       )}
     </Box>
   );
