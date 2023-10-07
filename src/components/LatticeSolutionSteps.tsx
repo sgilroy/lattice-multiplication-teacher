@@ -81,8 +81,6 @@ const SolutionStepView = ({
       )}
       <Box fontSize="lg" mt={4}>
         <Text fontWeight="bold">Step {currentStep + 1}:</Text>
-        {currentStep === STEPS.MAKE_SPACE &&
-          ` Make space for the numbers and the grid`}
         {currentStep === STEPS.WRITE_MULTIPLICAND &&
           ` Write the multiplicand ${multiplicand} along the top`}
         {currentStep === STEPS.WRITE_MULTIPLIER &&
