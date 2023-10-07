@@ -31,42 +31,46 @@ type SolutionStepViewProps = {
   solution: number[];
 };
 
-const SolutionStepView = (props: SolutionStepViewProps) => {
-  const isGridSubstep =
-    props.currentStep >= 4 && props.currentStep < 4 + props.gridSubsteps;
+const SolutionStepView = ({
+  currentStep,
+  gridSubsteps,
+  currentSolutionStep,
+  multiplicand,
+  multiplier,
+  solution,
+}: SolutionStepViewProps) => {
+  const isGridSubstep = currentStep >= 4 && currentStep < 4 + gridSubsteps;
   const colIndex =
-    props.currentSolutionStep &&
-    Math.floor(
-      (props.currentStep - 4) / props.currentSolutionStep.multiplier.length
-    );
+    currentSolutionStep &&
+    Math.floor((currentStep - 4) / currentSolutionStep.multiplier.length);
   const rowIndex =
-    props.currentSolutionStep &&
-    (props.currentStep - 4) % props.currentSolutionStep.multiplier.length;
+    currentSolutionStep &&
+    (currentStep - 4) % currentSolutionStep.multiplier.length;
   const row =
     isGridSubstep &&
-    props.currentSolutionStep.lattice &&
-    props.currentSolutionStep.lattice[colIndex];
+    currentSolutionStep.lattice &&
+    currentSolutionStep.lattice[colIndex];
   const digits = isGridSubstep && row && row[rowIndex];
 
   return (
     <>
-      {props.currentSolutionStep && (
+      {currentSolutionStep && (
         <LatticeGrid
-          multiplicand={props.currentSolutionStep.multiplicand}
-          multiplier={props.currentSolutionStep.multiplier}
-          lattice={props.currentSolutionStep.lattice}
-          totalsBottom={props.currentSolutionStep.totalsBottom}
-          totalsLeft={props.currentSolutionStep.totalsLeft}
+          multiplicand={currentSolutionStep.multiplicand}
+          multiplier={currentSolutionStep.multiplier}
+          lattice={currentSolutionStep.lattice}
+          totalsBottom={currentSolutionStep.totalsBottom}
+          totalsLeft={currentSolutionStep.totalsLeft}
         />
       )}
       <Box fontSize="lg" mt={4}>
-        <Text fontWeight="bold">Step {props.currentStep}:</Text>
-        {props.currentStep === 0 && ` Make space for the numbers and the grid`}
-        {props.currentStep === 1 &&
-          ` Write the multiplicand ${props.multiplicand} along the top`}
-        {props.currentStep === 2 &&
-          ` Write the multiplier ${props.multiplier} along the right side`}
-        {props.currentStep === 3 && ` Draw the grid`}
+        <Text fontWeight="bold">Step {currentStep}:</Text>
+        {currentStep === 0 && ` Make space for the numbers and the grid`}
+        {currentStep === 1 &&
+          ` Write the multiplicand ${multiplicand} along the top`}
+        {currentStep === 2 &&
+          ` Write the multiplier ${multiplier} along the right side`}
+        {currentStep === 3 && ` Draw the grid`}
         {isGridSubstep && (
           <>
             Multiply each digit of the multiplicand by each digit of the
@@ -74,8 +78,8 @@ const SolutionStepView = (props: SolutionStepViewProps) => {
             <br />
             <Flex direction="row" key={colIndex} gap={1} ml={4}>
               <Text fontSize="sm" fontWeight="bold">
-                {props.currentSolutionStep.multiplicand[colIndex]} *{" "}
-                {props.currentSolutionStep.multiplier[rowIndex]} ={" "}
+                {currentSolutionStep.multiplicand[colIndex]} *{" "}
+                {currentSolutionStep.multiplier[rowIndex]} ={" "}
               </Text>
               <Text fontSize="sm" fontWeight="bold">
                 {digits && digits[0]}
@@ -84,18 +88,18 @@ const SolutionStepView = (props: SolutionStepViewProps) => {
             </Flex>
           </>
         )}
-        {props.currentStep === 4 + props.gridSubsteps &&
-          ` Starting from the right, add up the diagonals: ${props.currentSolutionStep.totalsBottom
+        {currentStep === 4 + gridSubsteps &&
+          ` Starting from the right, add up the diagonals: ${currentSolutionStep.totalsBottom
             .slice()
             .reverse()
             .join(", ")}`}
-        {props.currentStep === 5 + props.gridSubsteps &&
-          ` Continue adding diagonals for the left side, bottom to top: ${props.currentSolutionStep.totalsLeft
+        {currentStep === 5 + gridSubsteps &&
+          ` Continue adding diagonals for the left side, bottom to top: ${currentSolutionStep.totalsLeft
             .slice()
             .reverse()
             .join(", ")}`}
-        {props.currentStep === 6 + props.gridSubsteps &&
-          ` Write out the solution: ${props.solution.join("")}`}
+        {currentStep === 6 + gridSubsteps &&
+          ` Write out the solution: ${solution.join("")}`}
       </Box>
     </>
   );
