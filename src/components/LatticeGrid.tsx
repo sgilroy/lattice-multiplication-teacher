@@ -9,7 +9,7 @@ interface LatticeGridProps {
   totalsLeft: number[];
 }
 
-function f(c, r, m, n) {
+function getDiagonalDelay(c: number, r: number, m: number, n: number) {
   let count = 0;
 
   // Iterate over each cell and check if it's southeast of the line or on the line but to the northeast
@@ -145,8 +145,12 @@ function LatticeGrid({
                     css={{
                       clipPath: "inset(0 100% 0 0)",
                       animation: `${diagonalAnimationDuration}ms ${revealElement} forwards ${
-                        f(1, rowIndex + 1, numColumns + 1, numRows + 1) *
-                        diagonalAnimationDuration
+                        getDiagonalDelay(
+                          1,
+                          rowIndex + 1,
+                          numColumns + 1,
+                          numRows + 1
+                        ) * diagonalAnimationDuration
                         // (numRows - rowIndex) * colIndex * 100
                       }ms linear`,
                     }}
@@ -241,7 +245,7 @@ function LatticeGrid({
                         css={{
                           clipPath: "inset(0 100% 0 0)",
                           animation: `${diagonalAnimationDuration}ms ${revealElement} forwards ${
-                            f(
+                            getDiagonalDelay(
                               colIndex + 2,
                               rowIndex + 1,
                               numColumns + 1,
