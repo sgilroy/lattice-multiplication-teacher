@@ -31,6 +31,16 @@ type SolutionStepViewProps = {
   solution: number[];
 };
 
+const STEPS = {
+  WRITE_MULTIPLICAND: 0,
+  WRITE_MULTIPLIER: 1,
+  DRAW_GRID: 2,
+  MULTIPLY_DIGITS: 3,
+  ADD_BOTTOM_TOTALS: 4,
+  ADD_LEFT_TOTALS: 5,
+  WRITE_SOLUTION: 6,
+};
+
 const SolutionStepView = ({
   currentStep,
   gridSubsteps,
@@ -39,13 +49,19 @@ const SolutionStepView = ({
   multiplier,
   solution,
 }: SolutionStepViewProps) => {
-  const isGridSubstep = currentStep >= 4 && currentStep < 4 + gridSubsteps;
+  const isGridSubstep =
+    currentStep >= STEPS.MULTIPLY_DIGITS &&
+    currentStep < STEPS.MULTIPLY_DIGITS + gridSubsteps;
   const colIndex =
     currentSolutionStep &&
-    Math.floor((currentStep - 4) / currentSolutionStep.multiplier.length);
+    Math.floor(
+      (currentStep - STEPS.MULTIPLY_DIGITS) /
+        currentSolutionStep.multiplier.length
+    );
   const rowIndex =
     currentSolutionStep &&
-    (currentStep - 4) % currentSolutionStep.multiplier.length;
+    (currentStep - STEPS.MULTIPLY_DIGITS) %
+      currentSolutionStep.multiplier.length;
   const row =
     isGridSubstep &&
     currentSolutionStep.lattice &&
@@ -64,13 +80,14 @@ const SolutionStepView = ({
         />
       )}
       <Box fontSize="lg" mt={4}>
-        <Text fontWeight="bold">Step {currentStep}:</Text>
-        {currentStep === 0 && ` Make space for the numbers and the grid`}
-        {currentStep === 1 &&
+        <Text fontWeight="bold">Step {currentStep + 1}:</Text>
+        {currentStep === STEPS.MAKE_SPACE &&
+          ` Make space for the numbers and the grid`}
+        {currentStep === STEPS.WRITE_MULTIPLICAND &&
           ` Write the multiplicand ${multiplicand} along the top`}
-        {currentStep === 2 &&
+        {currentStep === STEPS.WRITE_MULTIPLIER &&
           ` Write the multiplier ${multiplier} along the right side`}
-        {currentStep === 3 && ` Draw the grid`}
+        {currentStep === STEPS.DRAW_GRID && ` Draw the grid`}
         {isGridSubstep && (
           <>
             Multiply each digit of the multiplicand by each digit of the
@@ -88,17 +105,17 @@ const SolutionStepView = ({
             </Flex>
           </>
         )}
-        {currentStep === 4 + gridSubsteps &&
+        {currentStep === STEPS.ADD_BOTTOM_TOTALS + gridSubsteps - 1 &&
           ` Starting from the right, add up the diagonals: ${currentSolutionStep.totalsBottom
             .slice()
             .reverse()
             .join(", ")}`}
-        {currentStep === 5 + gridSubsteps &&
+        {currentStep === STEPS.ADD_LEFT_TOTALS + gridSubsteps - 1 &&
           ` Continue adding diagonals for the left side, bottom to top: ${currentSolutionStep.totalsLeft
             .slice()
             .reverse()
             .join(", ")}`}
-        {currentStep === 6 + gridSubsteps &&
+        {currentStep === STEPS.WRITE_SOLUTION + gridSubsteps - 1 &&
           ` Write out the solution: ${solution.join("")}`}
       </Box>
     </>
@@ -165,36 +182,44 @@ function LatticeSolutionSteps({
     const steps: SolutionStep[] = [];
     const gridSubsteps = multiplicandDigits.length * multiplierDigits.length;
     setGridSubsteps(gridSubsteps);
-    for (let i = 0; i < 7 + gridSubsteps; i++) {
+    for (
+      let stepIndex = 0;
+      stepIndex < STEPS.WRITE_SOLUTION + gridSubsteps;
+      stepIndex++
+    ) {
       const step: SolutionStep = {
         multiplicand:
-          i >= 1
+          stepIndex >= STEPS.WRITE_MULTIPLICAND
             ? multiplicandDigits
             : Array(multiplicandDigits.length).fill(undefined).map(Number),
         multiplier:
-          i >= 2
+          stepIndex >= STEPS.WRITE_MULTIPLIER
             ? multiplierDigits
             : Array(multiplierDigits.length).fill(undefined).map(Number),
         totalsBottom: [],
         totalsLeft: [],
       };
-      if (i >= 3) {
+      if (stepIndex >= STEPS.DRAW_GRID) {
         step.lattice = multiplicandDigits.map(() =>
           multiplierDigits.map(() => [NaN, NaN])
         );
         // sub steps
-        for (let j = 0; j < Math.min(i - 3, gridSubsteps); j++) {
-          const row = j % multiplierDigits.length;
-          const col = Math.floor(j / multiplierDigits.length);
+        for (
+          let substepIndex = 0;
+          substepIndex < Math.min(stepIndex - STEPS.DRAW_GRID, gridSubsteps);
+          substepIndex++
+        ) {
+          const row = substepIndex % multiplierDigits.length;
+          const col = Math.floor(substepIndex / multiplierDigits.length);
           const product = multiplicandDigits[col] * multiplierDigits[row];
           step.lattice[col][row][0] = Math.floor(product / 10);
           step.lattice[col][row][1] = product % 10;
         }
       }
-      if (i >= 4 + gridSubsteps) {
+      if (stepIndex >= STEPS.MULTIPLY_DIGITS + gridSubsteps) {
         step.totalsBottom = totalsBottom.slice();
       }
-      if (i >= 5 + gridSubsteps) {
+      if (stepIndex >= STEPS.ADD_BOTTOM_TOTALS + gridSubsteps) {
         step.totalsLeft = totalsLeftPadded.slice();
       }
       steps.push(step);
