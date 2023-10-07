@@ -3,15 +3,16 @@ import LatticeGrid from "./LatticeGrid";
 import { SolutionStep } from "./LatticeSolutionSteps";
 import { useTranslation } from "react-i18next";
 
-export const STEPS = {
-  WRITE_MULTIPLICAND: 0,
-  WRITE_MULTIPLIER: 1,
-  DRAW_GRID: 2,
-  MULTIPLY_DIGITS: 3,
-  ADD_BOTTOM_TOTALS: 4,
-  ADD_LEFT_TOTALS: 5,
-  WRITE_SOLUTION: 6,
-};
+export enum STEPS {
+  MAKE_SPACE,
+  WRITE_MULTIPLICAND,
+  WRITE_MULTIPLIER,
+  DRAW_GRID,
+  MULTIPLY_DIGITS,
+  ADD_BOTTOM_TOTALS,
+  ADD_LEFT_TOTALS,
+  WRITE_SOLUTION,
+}
 
 export type SolutionStepViewProps = {
   currentStep: number;
@@ -66,6 +67,7 @@ export const SolutionStepView = ({
         <Text fontWeight="bold">
           {t("step")} {currentStep + 1}:
         </Text>
+        {currentStep === STEPS.MAKE_SPACE && ` ${t("makeSpace")}`}
         {currentStep === STEPS.WRITE_MULTIPLICAND &&
           ` ${t("writeMultiplicand")} ${multiplicand} ${t("alongTheTop")}`}
         {currentStep === STEPS.WRITE_MULTIPLIER &&

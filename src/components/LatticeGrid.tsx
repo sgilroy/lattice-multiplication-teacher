@@ -1,4 +1,5 @@
 import { Box, BoxProps, Flex, Text, useColorModeValue } from "@chakra-ui/react";
+import { keyframes } from "@emotion/react";
 
 interface LatticeGridProps {
   multiplicand: number[];
@@ -23,6 +24,16 @@ const CellDiagonal = ({ diagonalLength }: { diagonalLength: number }) => (
   />
 );
 
+const cellSize = 40;
+const revealElement = keyframes`
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+`;
+
 function LatticeGrid({
   multiplicand,
   multiplier,
@@ -33,7 +44,6 @@ function LatticeGrid({
 }: LatticeGridProps & BoxProps) {
   const numColumns = multiplicand.length;
   const numRows = multiplier.length;
-  const cellSize = 40;
   const diagonalLength = Math.sqrt(cellSize * cellSize * 2);
 
   const bg = useColorModeValue("gray.200", "gray.700");
@@ -51,13 +61,22 @@ function LatticeGrid({
               h={`${cellSize}px`}
               display="flex"
               alignItems="flex-end"
+              overflow="hidden"
             >
               {!Number.isNaN(digit) && (
                 <Text
                   fontSize="sm"
                   fontWeight="bold"
-                  width="100%"
+                  width={`${cellSize}px`}
                   textAlign="center"
+                  whiteSpace="nowrap"
+                  overflow="hidden"
+                  css={{
+                    clipPath: "inset(0 100% 0 0)",
+                    animation: `0.2s ${revealElement} forwards ${
+                      index * 2 + 1
+                    }00ms ease-in-out`,
+                  }}
                 >
                   {digit}
                 </Text>
@@ -81,16 +100,25 @@ function LatticeGrid({
                 position="relative"
                 overflow="hidden"
               >
-                <Text
-                  fontSize="sm"
-                  fontWeight="bold"
-                  position="absolute"
-                  top={`${cellSize * 0.75}px`}
-                  left={`${cellSize * 0.75}px`}
-                  transform="translate(-50%, -50%)"
-                >
-                  {rowIndex < numRows && totalsLeft[rowIndex]}
-                </Text>
+                {rowIndex < numRows &&
+                  Number.isInteger(totalsLeft[rowIndex]) && (
+                    <Text
+                      fontSize="sm"
+                      fontWeight="bold"
+                      position="absolute"
+                      top={`${cellSize * 0.75}px`}
+                      left={`${cellSize * 0.75}px`}
+                      transform="translate(-50%, -50%)"
+                      css={{
+                        clipPath: "inset(0 100% 0 0)",
+                        animation: `0.2s ${revealElement} forwards ${
+                          (numRows - rowIndex) * 2 + 1
+                        }00ms ease-in-out`,
+                      }}
+                    >
+                      {rowIndex < numRows && totalsLeft[rowIndex]}
+                    </Text>
+                  )}
                 {lattice && (
                   <CellDiagonal
                     diagonalLength={diagonalLength / 2}
@@ -123,6 +151,12 @@ function LatticeGrid({
                             top={`${cellSize * 0.25}px`}
                             left={`${cellSize * 0.25}px`}
                             transform="translate(-50%, -50%)"
+                            css={{
+                              clipPath: "inset(0 100% 0 0)",
+                              animation: `0.2s ${revealElement} forwards ${
+                                rowIndex * 2 + 1
+                              }00ms ease-in-out`,
+                            }}
                           >
                             {lattice[col][row][0]}
                           </Text>
@@ -134,24 +168,37 @@ function LatticeGrid({
                             top={`${cellSize * 0.75}px`}
                             left={`${cellSize * 0.75}px`}
                             transform="translate(-50%, -50%)"
+                            css={{
+                              clipPath: "inset(0 100% 0 0)",
+                              animation: `0.2s ${revealElement} forwards ${
+                                rowIndex * 2 + 2
+                              }00ms ease-in-out`,
+                            }}
                           >
                             {lattice[col][row][1]}
                           </Text>
                         )}
                       </>
                     )}
-                    {row === numRows && (
-                      <Text
-                        fontSize="sm"
-                        fontWeight="bold"
-                        position="absolute"
-                        top={`${cellSize * 0.25}px`}
-                        left={`${cellSize * 0.25}px`}
-                        transform="translate(-50%, -50%)"
-                      >
-                        {totalsBottom[colIndex]}
-                      </Text>
-                    )}
+                    {row === numRows &&
+                      Number.isInteger(totalsBottom[colIndex]) && (
+                        <Text
+                          fontSize="sm"
+                          fontWeight="bold"
+                          position="absolute"
+                          top={`${cellSize * 0.25}px`}
+                          left={`${cellSize * 0.25}px`}
+                          transform="translate(-50%, -50%)"
+                          css={{
+                            clipPath: "inset(0 100% 0 0)",
+                            animation: `0.2s ${revealElement} forwards ${
+                              (numColumns - colIndex) * 2 + 1
+                            }00ms ease-in-out`,
+                          }}
+                        >
+                          {totalsBottom[colIndex]}
+                        </Text>
+                      )}
                     {lattice && (
                       <CellDiagonal
                         diagonalLength={
@@ -169,7 +216,17 @@ function LatticeGrid({
                 alignItems="center"
               >
                 {!Number.isNaN(digit) && (
-                  <Text fontSize="sm" fontWeight="bold" marginLeft={1}>
+                  <Text
+                    fontSize="sm"
+                    fontWeight="bold"
+                    marginLeft={1}
+                    css={{
+                      clipPath: "inset(0 100% 0 0)",
+                      animation: `0.2s ${revealElement} forwards ${
+                        rowIndex * 2 + 1
+                      }00ms ease-in-out`,
+                    }}
+                  >
                     {digit}
                   </Text>
                 )}
