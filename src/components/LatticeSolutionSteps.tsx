@@ -1,6 +1,7 @@
 import { Box, Button, Flex, IconButton, Text } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import {
+  FaFastForward,
   FaPause,
   FaPlay,
   FaStepBackward,
@@ -310,6 +311,12 @@ function LatticeSolutionSteps({
         <>
           <Flex direction="row" justify="left" mt={4} gap={3}>
             <IconButton
+              aria-label="Reset"
+              icon={<FaUndo />}
+              onClick={handleResetClick}
+              isDisabled={currentStep === 0}
+            />
+            <IconButton
               aria-label="Previous"
               icon={<FaStepBackward />}
               onClick={handlePreviousClick}
@@ -328,10 +335,10 @@ function LatticeSolutionSteps({
               isDisabled={currentStep === solutionSteps.length - 1 || isPlaying}
             />
             <IconButton
-              aria-label="Reset"
-              icon={<FaUndo />}
-              onClick={handleResetClick}
-              isDisabled={currentStep === 0}
+              aria-label="Jump to last step"
+              icon={<FaFastForward />}
+              onClick={() => setCurrentStep(solutionSteps.length - 1)}
+              isDisabled={currentStep === solutionSteps.length - 1 || isPlaying}
             />
           </Flex>
 
