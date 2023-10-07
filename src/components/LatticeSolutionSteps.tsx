@@ -1,9 +1,11 @@
+import { useLocation } from "react-router-dom";
 import { Box, Button, Flex, IconButton, Text } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import {
   FaFastForward,
   FaPause,
   FaPlay,
+  FaShare,
   FaStepBackward,
   FaStepForward,
   FaUndo,
@@ -283,11 +285,51 @@ function LatticeSolutionSteps({
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [handlePreviousClick, handlePlayPauseClick, handleNextClick]);
 
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const modeQueryParam = queryParams.get("mode");
+  const stepQueryParam = queryParams.get("step");
+
+  useEffect(() => {
+    if (modeQueryParam === "all") {
+      setIsAllStepsMode(true);
+    } else if (modeQueryParam === "one") {
+      setIsAllStepsMode(false);
+    }
+
+    if (stepQueryParam) {
+      const step = parseInt(stepQueryParam) - 1;
+      if (!isNaN(step) && step >= 0 && step < solutionSteps.length) {
+        setCurrentStep(step);
+      }
+    }
+  }, [modeQueryParam, stepQueryParam, solutionSteps.length]);
+
+  const handleShareClick = () => {
+    const baseUrl = window.location.origin + window.location.pathname;
+    const params = new URLSearchParams({
+      a: multiplicand.toString(),
+      b: multiplier.toString(),
+      mode: isAllStepsMode ? "all" : "one",
+    });
+    if (!isAllStepsMode) {
+      params.set("step", (currentStep + 1).toString());
+    }
+    const url = `${baseUrl}?${params.toString()}`;
+    navigator.clipboard.writeText(url);
+  };
   return (
     <Box>
-      <Button onClick={() => setIsAllStepsMode(!isAllStepsMode)}>
-        {isAllStepsMode ? "Show One Step" : "Show All Steps"}
-      </Button>
+      <Flex direction="row" gap={3}>
+        <Button onClick={() => setIsAllStepsMode(!isAllStepsMode)}>
+          {isAllStepsMode ? "Show One Step" : "Show All Steps"}
+        </Button>
+        <IconButton
+          aria-label="Share"
+          icon={<FaShare />}
+          onClick={handleShareClick}
+        />
+      </Flex>
       {isAllStepsMode ? (
         solutionSteps.map((step, index) => (
           <Box
@@ -295,6 +337,7 @@ function LatticeSolutionSteps({
             borderColor="gray.300"
             marginTop={4}
             borderRadius={4}
+            padding={4}
             key={index}
           >
             <SolutionStepView
