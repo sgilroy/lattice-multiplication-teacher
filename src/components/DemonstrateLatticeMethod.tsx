@@ -65,7 +65,11 @@ function DemonstrateLatticeMethod() {
           <Input
             placeholder="Multiplicand"
             value={multiplicand}
-            onChange={(e) => setMultiplicand(parseInt(e.target.value))}
+            onChange={(e) =>
+              setMultiplicand(
+                e.target.value === "" ? "" : parseInt(e.target.value)
+              )
+            }
             mr={2}
           />
           <Text fontWeight="bold" mr={2}>
@@ -74,12 +78,16 @@ function DemonstrateLatticeMethod() {
           <Input
             placeholder="Multiplier"
             value={multiplier}
-            onChange={(e) => setMultiplier(parseInt(e.target.value))}
+            onChange={(e) =>
+              setMultiplier(
+                e.target.value === "" ? "" : parseInt(e.target.value)
+              )
+            }
             mr={2}
           />
         </Flex>
       </Flex>
-      {multiplicand && multiplier && (
+      {multiplicand !== "" && multiplier !== "" && (
         <LatticeSolutionSteps
           multiplicand={multiplicand}
           multiplier={multiplier}
