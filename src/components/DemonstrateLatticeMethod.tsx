@@ -1,5 +1,5 @@
 import { Box, Flex, IconButton, Input, Text } from "@chakra-ui/react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FaRandom } from "react-icons/fa";
 import LatticeSolutionSteps from "./LatticeSolutionSteps";
 
@@ -13,6 +13,18 @@ function DemonstrateLatticeMethod() {
     setMultiplicand(randomMultiplicand);
     setMultiplier(randomMultiplier);
   };
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlMultiplicand = urlParams.get("multiplicand") || urlParams.get("a");
+    if (urlMultiplicand) {
+      setMultiplicand(parseInt(urlMultiplicand));
+    }
+    const urlMultiplier = urlParams.get("multiplier") || urlParams.get("b");
+    if (urlMultiplier) {
+      setMultiplier(parseInt(urlMultiplier));
+    }
+  }, []);
 
   return (
     <Box p={4}>
