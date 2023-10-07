@@ -1,20 +1,28 @@
 import {
   Box,
+  Button,
   Flex,
   IconButton,
   Input,
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuList,
   Spacer,
   Text,
   useColorMode,
 } from "@chakra-ui/react";
 import { useState, useEffect } from "react";
 import { FaRandom, FaSun, FaMoon } from "react-icons/fa";
+import { useTranslation } from "react-i18next";
 import LatticeSolutionSteps from "./LatticeSolutionSteps";
+import i18n from "../i18n";
 
 function DemonstrateLatticeMethod() {
   const [multiplicand, setMultiplicand] = useState<number | "">(321);
   const [multiplier, setMultiplier] = useState<number | "">(12);
   const { colorMode, toggleColorMode } = useColorMode();
+  const { t } = useTranslation();
 
   const handleRandomize = () => {
     const randomMultiplicand = Math.floor(Math.random() * 9900) + 100;
@@ -35,6 +43,10 @@ function DemonstrateLatticeMethod() {
     }
   }, []);
 
+  const changeLanguage = (lng: string) => {
+    i18n.changeLanguage(lng);
+  };
+
   return (
     <Box p={4}>
       <Flex
@@ -44,26 +56,39 @@ function DemonstrateLatticeMethod() {
         mb={4}
         gap={3}
       >
-        <Flex direction="row" width="100%">
+        <Flex direction="row" width="100%" gap={3}>
           <Text fontSize="xl" fontWeight="bold" mr={2}>
-            Multiply
+            {t("multiply")}
           </Text>
           <Spacer />
+          <Menu>
+            <MenuButton as={Button} aria-label={t("language")}>
+              {t("currentLanguage")}
+            </MenuButton>
+            <MenuList>
+              <MenuItem onClick={() => changeLanguage("en")}>
+                {t("english")}
+              </MenuItem>
+              <MenuItem onClick={() => changeLanguage("fr")}>
+                {t("french")}
+              </MenuItem>
+            </MenuList>
+          </Menu>
           <IconButton
-            aria-label="Toggle color mode"
+            aria-label={t("toggleColorMode")}
             icon={colorMode === "light" ? <FaMoon /> : <FaSun />}
             onClick={toggleColorMode}
           />
         </Flex>
         <Flex direction="row" align="center">
           <IconButton
-            aria-label="Randomize"
+            aria-label={t("randomize")}
             icon={<FaRandom />}
             onClick={handleRandomize}
             mr={2}
           />
           <Input
-            placeholder="Multiplicand"
+            placeholder={t("multiplicandPlaceholder")}
             value={multiplicand}
             onChange={(e) =>
               setMultiplicand(
@@ -76,7 +101,7 @@ function DemonstrateLatticeMethod() {
             x
           </Text>
           <Input
-            placeholder="Multiplier"
+            placeholder={t("multiplierPlaceholder")}
             value={multiplier}
             onChange={(e) =>
               setMultiplier(
