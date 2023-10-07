@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg viewBox="48.304 52.842 200 200" width="200" height="200" xmlns="http://www.w3.org/2000/svg">
+  <rect width="200" height="200" rx="20" ry="20" fill="white" x="48.304" y="52.842" />
+  <rect width="99.809" height="99.809" fill="#ADD8E6" x="98.936" y="101.482" style="" />
+  <line x1="98.304" y1="102.842" x2="198.304" y2="102.842" stroke="black" stroke-width="6" />
+  <line x1="98.304" y1="152.842" x2="198.304" y2="152.842" stroke="black" stroke-width="6" />
+  <line x1="98.304" y1="202.842" x2="198.304" y2="202.842" stroke="black" stroke-width="6" />
+  <line x1="98.304" y1="102.842" x2="98.304" y2="202.842" stroke="black" stroke-width="6" />
+  <line x1="148.304" y1="102.842" x2="148.304" y2="202.842" stroke="black" stroke-width="6" />
+  <line x1="198.304" y1="101.213" x2="198.304" y2="204.38" stroke="black" stroke-width="6" style="" />
+  <line x1="72.353" y1="178.313" x2="148.304" y2="102.842" stroke="black" stroke-width="6" style="transform-origin: 110.329px 140.578px;" transform="matrix(-1, 0, 0, -1, -0.000015258789, 0)"/>
+  <line x1="72.505" y1="229.35" x2="195.59" y2="104.618" stroke="black" stroke-width="6" style="transform-origin: 134.047px 166.984px;" transform="matrix(-1, 0, 0, -1, 0, 0.000030517578)"/>
+  <line x1="121.288" y1="230" x2="198.077" y2="152.533" stroke="black" stroke-width="6" style="" />
+  <text x="148.304" y="92.842" font-family="Arial" font-size="24" fill="black" text-anchor="middle" style="font-size: 24px; white-space: pre;" >2     3</text>
+  <text x="263.296" y="171.759" font-family="Arial" font-size="24" fill="black" text-anchor="middle" dominant-baseline="middle" style="font-size: 24px; white-space: pre;" transform="matrix(1, 0, 0, 1, -53.706146240234375, -40.11587905883789)">4<tspan x="263.2959899902344" dy="1em">​</tspan><tspan x="263.2959899902344" dy="1em">​</tspan>5</text>
+  <line x1="167.866" y1="230.57" x2="197.432" y2="202.032" stroke="black" stroke-width="6" style="" />
+  <line x1="69.139" y1="131.319" x2="98.705" y2="102.781" stroke="black" stroke-width="6" style="" />
+</svg>
