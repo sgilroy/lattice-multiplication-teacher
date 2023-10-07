@@ -5,7 +5,11 @@ import DemonstrateLatticeMethod from "./components/DemonstrateLatticeMethod";
 function App() {
   return (
     <ChakraProvider>
-      <BrowserRouter>
+      <BrowserRouter
+        basename={
+          import.meta.env.DEV ? "/" : "/lattice-multiplication-teacher/"
+        }
+      >
         <Routes>
           <Route path="/" element={<DemonstrateLatticeMethod />} />
         </Routes>
