@@ -1,11 +1,20 @@
-import { Box, Flex, IconButton, Input, Text } from "@chakra-ui/react";
+import {
+  Box,
+  Flex,
+  IconButton,
+  Input,
+  Spacer,
+  Text,
+  useColorMode,
+} from "@chakra-ui/react";
 import { useState, useEffect } from "react";
-import { FaRandom } from "react-icons/fa";
+import { FaRandom, FaSun, FaMoon } from "react-icons/fa";
 import LatticeSolutionSteps from "./LatticeSolutionSteps";
 
 function DemonstrateLatticeMethod() {
   const [multiplicand, setMultiplicand] = useState<number | "">(321);
   const [multiplier, setMultiplier] = useState<number | "">(12);
+  const { colorMode, toggleColorMode } = useColorMode();
 
   const handleRandomize = () => {
     const randomMultiplicand = Math.floor(Math.random() * 9900) + 100;
@@ -28,17 +37,31 @@ function DemonstrateLatticeMethod() {
 
   return (
     <Box p={4}>
-      <Flex direction="column">
-        <Text fontSize="xl" fontWeight="bold" mr={2}>
-          Multiply
-        </Text>
-        <Flex direction="row" align="center" mb={4}>
+      <Flex
+        direction="column"
+        justify="space-between"
+        align="center"
+        mb={4}
+        gap={3}
+      >
+        <Flex direction="row" width="100%">
+          <Text fontSize="xl" fontWeight="bold" mr={2}>
+            Multiply
+          </Text>
+          <Spacer />
+          <IconButton
+            aria-label="Toggle color mode"
+            icon={colorMode === "light" ? <FaMoon /> : <FaSun />}
+            onClick={toggleColorMode}
+          />
+        </Flex>
+        <Flex direction="row" align="center">
           <IconButton
             aria-label="Randomize"
             icon={<FaRandom />}
             onClick={handleRandomize}
+            mr={2}
           />
-
           <Input
             placeholder="Multiplicand"
             value={multiplicand}

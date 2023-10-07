@@ -1,4 +1,4 @@
-import { Box, BoxProps, Flex, Text } from "@chakra-ui/react";
+import { Box, BoxProps, Flex, Text, useColorModeValue } from "@chakra-ui/react";
 
 interface LatticeGridProps {
   multiplicand: number[];
@@ -35,6 +35,9 @@ function LatticeGrid({
   const numRows = multiplier.length;
   const cellSize = 40;
   const diagonalLength = Math.sqrt(cellSize * cellSize * 2);
+
+  const bg = useColorModeValue("gray.200", "gray.700");
+  const borderColor = useColorModeValue("gray.400", "gray.500");
 
   return (
     <Box {...props}>
@@ -103,15 +106,11 @@ function LatticeGrid({
                     key={colIndex}
                     w={`${cellSize}px`}
                     h={`${cellSize}px`}
-                    bg={
-                      lattice && lattice[col] && lattice[col][row]
-                        ? "gray.200"
-                        : ""
-                    }
+                    bg={lattice && lattice[col] && lattice[col][row] ? bg : ""}
                     borderWidth={
                       lattice && lattice[col] && lattice[col][row] ? "1px" : 0
                     }
-                    borderColor="gray.400"
+                    borderColor={borderColor}
                     position="relative"
                     overflow="hidden"
                   >
