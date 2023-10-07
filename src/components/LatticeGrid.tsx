@@ -9,21 +9,22 @@ interface LatticeGridProps {
   totalsLeft: number[];
 }
 
-const CellDiagonal = ({ diagonalLength }: { diagonalLength: number }) => (
-  <Box
-    position="absolute"
-    bottom={0}
-    left={0}
-    height={`${diagonalLength + 1}px`}
-    width={`${diagonalLength + 1}px`}
-    borderLeft="2px"
-    borderColor="gray.400"
-    transformOrigin="bottom left"
-    transform={`translate(43px, -40px) rotate(-135deg) translate(0px, 0px)`}
-    marginLeft="-1px"
-  />
-);
+function f(c, r, m, n) {
+  let count = 0;
 
+  // Iterate over each cell and check if it's southeast of the line or on the line but to the northeast
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      if (i < -j + r + c || (i === -j + r + c && j > c)) {
+        count++;
+      }
+    }
+  }
+
+  return count;
+}
+
+const diagonalAnimationDuration = 50;
 const cellSize = 40;
 const revealElement = keyframes`
   from {
@@ -33,6 +34,25 @@ const revealElement = keyframes`
     clip-path: inset(0 0 0 0);
   }
 `;
+
+const CellDiagonal = ({
+  diagonalLength,
+  ...props
+}: { diagonalLength: number } & BoxProps) => (
+  <Box
+    position="absolute"
+    bottom={0}
+    left={0}
+    height={`${diagonalLength + 1}px`}
+    width={`${diagonalLength + 1}px`}
+    borderBottom="2px"
+    borderColor="gray.400"
+    transformOrigin="bottom left"
+    transform={`translate(40px, -41px) rotate(-225deg)`}
+    marginLeft="-1px"
+    {...props}
+  />
+);
 
 function LatticeGrid({
   multiplicand,
@@ -122,6 +142,14 @@ function LatticeGrid({
                 {lattice && (
                   <CellDiagonal
                     diagonalLength={diagonalLength / 2}
+                    css={{
+                      clipPath: "inset(0 100% 0 0)",
+                      animation: `${diagonalAnimationDuration}ms ${revealElement} forwards ${
+                        f(1, rowIndex + 1, numColumns + 1, numRows + 1) *
+                        diagonalAnimationDuration
+                        // (numRows - rowIndex) * colIndex * 100
+                      }ms linear`,
+                    }}
                   ></CellDiagonal>
                 )}
               </Box>
@@ -141,6 +169,12 @@ function LatticeGrid({
                     borderColor={borderColor}
                     position="relative"
                     overflow="hidden"
+                    css={{
+                      clipPath: "inset(0 100% 0 0)",
+                      animation: `0.2s ${revealElement} forwards ${
+                        rowIndex * 2 + 1
+                      }00ms ease-in-out`,
+                    }}
                   >
                     {lattice && lattice[col] && lattice[col][row] && (
                       <>
@@ -204,7 +238,18 @@ function LatticeGrid({
                         diagonalLength={
                           row === numRows ? diagonalLength / 2 : diagonalLength
                         }
-                      ></CellDiagonal>
+                        css={{
+                          clipPath: "inset(0 100% 0 0)",
+                          animation: `${diagonalAnimationDuration}ms ${revealElement} forwards ${
+                            f(
+                              colIndex + 2,
+                              rowIndex + 1,
+                              numColumns + 1,
+                              numRows + 1
+                            ) * diagonalAnimationDuration
+                          }ms linear`,
+                        }}
+                      />
                     )}
                   </Box>
                 );
