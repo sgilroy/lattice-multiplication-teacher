@@ -21,10 +21,12 @@ function getDiagonalDelay(c: number, r: number, m: number, n: number) {
     }
   }
 
-  return count;
+  return count * diagonalAnimationDuration + getGridAnimationDuration(n);
 }
 
 const diagonalAnimationDuration = 50;
+const getGridAnimationDuration = (numRows: number) =>
+  ((numRows + 1) * 2 + 1) * 100;
 const cellSize = 40;
 const revealElement = keyframes`
   from {
@@ -46,7 +48,6 @@ const CellDiagonal = ({
     height={`${diagonalLength + 1}px`}
     width={`${diagonalLength + 1}px`}
     borderBottom="2px"
-    borderColor="gray.400"
     transformOrigin="bottom left"
     transform={`translate(40px, -41px) rotate(-225deg)`}
     marginLeft="-1px"
@@ -66,12 +67,37 @@ function LatticeGrid({
   const numRows = multiplier.length;
   const diagonalLength = Math.sqrt(cellSize * cellSize * 2);
 
-  const bg = useColorModeValue("gray.200", "gray.700");
+  const backgroundColor = useColorModeValue("gray.200", "gray.700");
   const borderColor = useColorModeValue("gray.400", "gray.500");
+
+  function getGridLineDelay(rowIndex: number, colIndex: number) {
+    const isTopEdge = rowIndex === 0 && colIndex === -1;
+    const isRightEdge = colIndex === numColumns && rowIndex === -1;
+    const isBottomEdge = rowIndex === numRows && colIndex === -1;
+    const isLeftEdge = colIndex === 0 && rowIndex === -1;
+    const delay = isTopEdge
+      ? 0
+      : isRightEdge
+      ? 1 * 100
+      : isBottomEdge
+      ? 2 * 100
+      : isLeftEdge
+      ? 3 * 100
+      : (rowIndex === -1
+          ? (numRows - 1) * 100 + colIndex * 50
+          : rowIndex * 50) +
+        4 * 100;
+    return delay;
+  }
 
   return (
     <Box {...props}>
-      <Flex direction="column" align="center" justify="center">
+      <Flex
+        direction="column"
+        align="center"
+        justify="center"
+        position="relative"
+      >
         <Flex direction="row" align="center" justify="center">
           <Box w={`${cellSize}px`} h={`${cellSize}px`} />
           {multiplicand.map((digit, index) => (
@@ -142,17 +168,15 @@ function LatticeGrid({
                 {lattice && (
                   <CellDiagonal
                     diagonalLength={diagonalLength / 2}
+                    borderColor={borderColor}
                     css={{
                       clipPath: "inset(0 100% 0 0)",
-                      animation: `${diagonalAnimationDuration}ms ${revealElement} forwards ${
-                        getDiagonalDelay(
-                          1,
-                          rowIndex + 1,
-                          numColumns + 1,
-                          numRows + 1
-                        ) * diagonalAnimationDuration
-                        // (numRows - rowIndex) * colIndex * 100
-                      }ms linear`,
+                      animation: `${diagonalAnimationDuration}ms ${revealElement} forwards ${getDiagonalDelay(
+                        1,
+                        rowIndex + 1,
+                        numColumns + 1,
+                        numRows + 1
+                      )}ms linear`,
                     }}
                   ></CellDiagonal>
                 )}
@@ -166,19 +190,10 @@ function LatticeGrid({
                     key={colIndex}
                     w={`${cellSize}px`}
                     h={`${cellSize}px`}
-                    bg={lattice && lattice[col] && lattice[col][row] ? bg : ""}
-                    borderWidth={
-                      lattice && lattice[col] && lattice[col][row] ? "1px" : 0
-                    }
-                    borderColor={borderColor}
                     position="relative"
                     overflow="hidden"
-                    css={{
-                      clipPath: "inset(0 100% 0 0)",
-                      animation: `0.2s ${revealElement} forwards ${
-                        rowIndex * 2 + 1
-                      }00ms ease-in-out`,
-                    }}
+                    // zIndex to put the grid cell in front of the background color box
+                    zIndex={1}
                   >
                     {lattice && lattice[col] && lattice[col][row] && (
                       <>
@@ -191,9 +206,7 @@ function LatticeGrid({
                             transform="translate(-50%, -50%)"
                             css={{
                               clipPath: "inset(0 100% 0 0)",
-                              animation: `0.2s ${revealElement} forwards ${
-                                rowIndex * 2 + 1
-                              }00ms ease-in-out`,
+                              animation: `0.2s ${revealElement} forwards 0ms ease-in-out`,
                             }}
                           >
                             {lattice[col][row][0]}
@@ -208,9 +221,7 @@ function LatticeGrid({
                             transform="translate(-50%, -50%)"
                             css={{
                               clipPath: "inset(0 100% 0 0)",
-                              animation: `0.2s ${revealElement} forwards ${
-                                rowIndex * 2 + 2
-                              }00ms ease-in-out`,
+                              animation: `0.2s ${revealElement} forwards 100ms ease-in-out`,
                             }}
                           >
                             {lattice[col][row][1]}
@@ -242,16 +253,15 @@ function LatticeGrid({
                         diagonalLength={
                           row === numRows ? diagonalLength / 2 : diagonalLength
                         }
+                        borderColor={borderColor}
                         css={{
                           clipPath: "inset(0 100% 0 0)",
-                          animation: `${diagonalAnimationDuration}ms ${revealElement} forwards ${
-                            getDiagonalDelay(
-                              colIndex + 2,
-                              rowIndex + 1,
-                              numColumns + 1,
-                              numRows + 1
-                            ) * diagonalAnimationDuration
-                          }ms linear`,
+                          animation: `${diagonalAnimationDuration}ms ${revealElement} forwards ${getDiagonalDelay(
+                            colIndex + 2,
+                            rowIndex + 1,
+                            numColumns + 1,
+                            numRows + 1
+                          )}ms linear`,
                         }}
                       />
                     )}
@@ -283,6 +293,75 @@ function LatticeGrid({
             </Flex>
           );
         })}
+        {lattice && (
+          <Box
+            position="absolute"
+            width={`${cellSize * numColumns}px`}
+            height={`${cellSize * numRows}px`}
+          >
+            <Box
+              position="absolute"
+              width={`${cellSize * numColumns}px`}
+              height={`${cellSize * numRows}px`}
+              bg={backgroundColor}
+              css={{
+                clipPath: "inset(0 100% 0 0)",
+                animation: `300ms ${revealElement} forwards ${getGridAnimationDuration(
+                  numRows
+                )}ms`,
+              }}
+            />
+            {[...Array(numRows + 1)].map((_, rowIndex) => {
+              const flip = rowIndex === numRows || rowIndex % 2 !== 0;
+              return (
+                <Box
+                  key={rowIndex}
+                  position="absolute"
+                  left={0}
+                  top={`${rowIndex * cellSize}px`}
+                  width={`${numColumns * cellSize}px`}
+                  borderBottom="2px solid"
+                  borderColor={borderColor}
+                  transform={`rotate(${flip ? -180 : 0}deg) translate(${
+                    flip ? -numColumns * cellSize : 0
+                  }px, ${flip ? 2 : 0}px)`}
+                  transformOrigin="bottom left"
+                  css={{
+                    clipPath: "inset(0 100% 0 0)",
+                    animation: `100ms ${revealElement} forwards ${getGridLineDelay(
+                      rowIndex,
+                      -1
+                    )}ms`,
+                  }}
+                />
+              );
+            })}
+            {[...Array(numColumns + 1)].map((_, colIndex) => {
+              const flip = colIndex !== numColumns && colIndex % 2 === 0;
+              return (
+                <Box
+                  key={"c" + colIndex}
+                  position="absolute"
+                  left={`${colIndex * cellSize}px`}
+                  width={`${numRows * cellSize + 2}px`}
+                  borderBottom="2px solid"
+                  borderColor={borderColor}
+                  transform={`rotate(${flip ? -90 : 90}deg) translate(${
+                    flip ? -numRows * cellSize : -2
+                  }px, ${flip ? 0 : 2}px)`}
+                  transformOrigin="bottom left"
+                  css={{
+                    clipPath: "inset(0 100% 0 0)",
+                    animation: `100ms ${revealElement} forwards ${getGridLineDelay(
+                      -1,
+                      colIndex
+                    )}ms`,
+                  }}
+                />
+              );
+            })}
+          </Box>
+        )}
       </Flex>
     </Box>
   );
