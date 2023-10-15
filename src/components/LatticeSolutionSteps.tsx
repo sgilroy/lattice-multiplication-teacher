@@ -195,26 +195,30 @@ function LatticeSolutionSteps({
         step.lattice = multiplicandDigits.map(() =>
           multiplierDigits.map(() => [NaN, NaN])
         );
-        // sub steps
-        for (
-          let substepIndex = 0;
-          substepIndex < Math.min(stepIndex - STEPS.DRAW_GRID, gridSubsteps);
-          substepIndex++
-        ) {
-          const row = substepIndex % multiplierDigits.length;
-          const col = Math.floor(substepIndex / multiplierDigits.length);
-          const product = multiplicandDigits[col] * multiplierDigits[row];
-          step.lattice[col][row][0] = Math.floor(product / 10);
-          step.lattice[col][row][1] = product % 10;
+        if (stepIndex >= STEPS.MULTIPLY_DIGITS) {
+          // sub steps
+          for (
+            let substepIndex = 0;
+            substepIndex <
+            Math.min(stepIndex - STEPS.MULTIPLY_DIGITS + 1, gridSubsteps);
+            substepIndex++
+          ) {
+            const row = substepIndex % multiplierDigits.length;
+            const col = Math.floor(substepIndex / multiplierDigits.length);
+            const product = multiplicandDigits[col] * multiplierDigits[row];
+            step.lattice[col][row][0] = Math.floor(product / 10);
+            step.lattice[col][row][1] = product % 10;
+          }
         }
       }
+
       if (stepIndex >= STEPS.MULTIPLY_DIGITS + gridSubsteps) {
         // sub steps
         for (
           let substepIndex = 0;
           substepIndex <
           Math.min(
-            stepIndex - STEPS.DRAW_GRID - gridSubsteps,
+            stepIndex - STEPS.MULTIPLY_DIGITS - gridSubsteps + 1,
             diagonalSubsteps
           );
           substepIndex++

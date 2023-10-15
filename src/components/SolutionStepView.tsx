@@ -5,9 +5,9 @@ import { useTranslation } from "react-i18next";
 
 export enum STEPS {
   MAKE_SPACE,
+  DRAW_GRID,
   WRITE_MULTIPLICAND,
   WRITE_MULTIPLIER,
-  DRAW_GRID,
   MULTIPLY_DIGITS,
   WRITE_SOLUTION,
 }
@@ -85,10 +85,16 @@ export const SolutionStepView = ({
         </Text>
         {currentStep === STEPS.MAKE_SPACE && ` ${t("makeSpace")}`}
         {currentStep === STEPS.WRITE_MULTIPLICAND &&
-          ` ${t("writeMultiplicand")} ${multiplicand} ${t("alongTheTop")}`}
+          ` ${t("writeMultiplicand", { multiplicand })}`}
         {currentStep === STEPS.WRITE_MULTIPLIER &&
-          ` ${t("writeMultiplier")} ${multiplier} ${t("alongTheRightSide")}`}
-        {currentStep === STEPS.DRAW_GRID && ` ${t("drawGrid")}`}
+          ` ${t("writeMultiplier", { multiplier })}`}
+        {currentStep === STEPS.DRAW_GRID &&
+          ` ${t("drawGrid", {
+            columns: currentSolutionStep.multiplicand.length,
+            multiplicand,
+            rows: currentSolutionStep.multiplier.length,
+            multiplier,
+          })}`}
         {isGridSubstep && (
           <>
             {t("multiplyDigits")}
