@@ -142,9 +142,7 @@ function LatticeGrid({
                   overflow="hidden"
                   css={{
                     clipPath: "inset(0 100% 0 0)",
-                    animation: `0.2s ${revealElement} forwards ${
-                      (numRows - index) * 2
-                    }00ms ease-in-out`,
+                    animation: `0.2s ${revealElement} forwards 100ms ease-in-out`,
                   }}
                 >
                   {carryTop[index]}
@@ -180,9 +178,7 @@ function LatticeGrid({
                       transform="translate(-50%, -50%)"
                       css={{
                         clipPath: "inset(0 100% 0 0)",
-                        animation: `0.2s ${revealElement} forwards ${
-                          (numRows - rowIndex) * 2 + 1
-                        }00ms ease-in-out`,
+                        animation: `0.2s ${revealElement} forwards 0ms ease-in-out`,
                       }}
                     >
                       {rowIndex < numRows && totalsLeft[rowIndex]}
@@ -263,9 +259,7 @@ function LatticeGrid({
                           transform="translate(-50%, -50%)"
                           css={{
                             clipPath: "inset(0 100% 0 0)",
-                            animation: `0.2s ${revealElement} forwards ${
-                              (numColumns - colIndex) * 2 + 1
-                            }00ms ease-in-out`,
+                            animation: `0.2s ${revealElement} forwards 0ms ease-in-out`,
                           }}
                         >
                           {totalsBottom[colIndex]}
@@ -325,9 +319,7 @@ function LatticeGrid({
                     transform="translate(-50%, -50%)"
                     css={{
                       clipPath: "inset(0 100% 0 0)",
-                      animation: `0.2s ${revealElement} forwards ${
-                        (numRows - rowIndex) * 2
-                      }00ms ease-in-out`,
+                      animation: `0.2s ${revealElement} forwards 100ms ease-in-out`,
                     }}
                   >
                     {carryRight[rowIndex]}

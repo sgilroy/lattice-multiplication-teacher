@@ -1,6 +1,6 @@
 import { Box, Flex, Text } from "@chakra-ui/react";
 import LatticeGrid from "./LatticeGrid";
-import { SolutionStep } from "./LatticeSolutionSteps";
+import { Diagonal, SolutionStep } from "./LatticeSolutionSteps";
 import { useTranslation } from "react-i18next";
 
 export enum STEPS {
@@ -9,14 +9,13 @@ export enum STEPS {
   WRITE_MULTIPLIER,
   DRAW_GRID,
   MULTIPLY_DIGITS,
-  ADD_BOTTOM_TOTALS,
-  ADD_LEFT_TOTALS,
   WRITE_SOLUTION,
 }
 
 export type SolutionStepViewProps = {
   currentStep: number;
   gridSubsteps: number;
+  diagonalSubsteps: number;
   currentSolutionStep: SolutionStep;
   multiplicand: number;
   multiplier: number;
@@ -26,6 +25,7 @@ export type SolutionStepViewProps = {
 export const SolutionStepView = ({
   currentStep,
   gridSubsteps,
+  diagonalSubsteps,
   currentSolutionStep,
   multiplicand,
   multiplier,
@@ -36,6 +36,11 @@ export const SolutionStepView = ({
   const isGridSubstep =
     currentStep >= STEPS.MULTIPLY_DIGITS &&
     currentStep < STEPS.MULTIPLY_DIGITS + gridSubsteps;
+
+  const isDiagonalSubstep =
+    currentStep >= STEPS.MULTIPLY_DIGITS + gridSubsteps &&
+    currentStep < STEPS.MULTIPLY_DIGITS + gridSubsteps + diagonalSubsteps;
+
   const colIndex =
     currentSolutionStep &&
     Math.floor(
@@ -50,7 +55,16 @@ export const SolutionStepView = ({
     isGridSubstep &&
     currentSolutionStep.lattice &&
     currentSolutionStep.lattice[colIndex];
-  const digits = isGridSubstep && row && row[rowIndex];
+  const gridCellDigits = isGridSubstep && row && row[rowIndex];
+  const diagonal: Diagonal | undefined = isDiagonalSubstep
+    ? currentSolutionStep.diagonals[
+        currentStep - STEPS.MULTIPLY_DIGITS - gridSubsteps
+      ]
+    : undefined;
+  const addends = diagonal && diagonal.gridDigits.slice();
+  if (addends && diagonal && diagonal.carry !== undefined) {
+    addends.unshift(diagonal.carry);
+  }
 
   return (
     <>
@@ -65,7 +79,7 @@ export const SolutionStepView = ({
           totalsLeft={currentSolutionStep.totalsLeft}
         />
       )}
-      <Box fontSize="lg" mt={4}>
+      <Box fontSize="lg">
         <Text fontWeight="bold">
           {t("step")} {currentStep + 1}:
         </Text>
@@ -85,23 +99,28 @@ export const SolutionStepView = ({
                 {currentSolutionStep.multiplier[rowIndex]} ={" "}
               </Text>
               <Text fontSize="sm" fontWeight="bold">
-                {digits && digits[0]}
-                {digits && digits[1]}
+                {gridCellDigits && gridCellDigits[0]}
+                {gridCellDigits && gridCellDigits[1]}
               </Text>
             </Flex>
           </>
         )}
-        {currentStep === STEPS.ADD_BOTTOM_TOTALS + gridSubsteps - 1 &&
-          ` ${t("addBottomTotals")} ${currentSolutionStep.totalsBottom
-            .slice()
-            .reverse()
-            .join(", ")}`}
-        {currentStep === STEPS.ADD_LEFT_TOTALS + gridSubsteps - 1 &&
-          ` ${t("addLeftTotals")} ${currentSolutionStep.totalsLeft
-            .slice()
-            .reverse()
-            .join(", ")}`}
-        {currentStep === STEPS.WRITE_SOLUTION + gridSubsteps - 1 &&
+        {isDiagonalSubstep && diagonal && addends && (
+          <>
+            {t("addDiagonalDigits")}
+            <br />
+            <Flex direction="row" key={colIndex} gap={1} ml={4}>
+              <Text fontSize="sm" fontWeight="bold">
+                {addends.join(" + ")} ={" "}
+              </Text>
+              <Text fontSize="sm" fontWeight="bold">
+                {diagonal.sum}
+              </Text>
+            </Flex>
+          </>
+        )}
+        {currentStep ===
+          STEPS.WRITE_SOLUTION + gridSubsteps + diagonalSubsteps - 1 &&
           ` ${t("writeSolution")} ${solution.join("")}`}
       </Box>
     </>

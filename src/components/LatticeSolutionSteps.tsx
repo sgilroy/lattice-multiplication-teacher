@@ -1,6 +1,6 @@
-import { useLocation } from "react-router-dom";
 import { Box, Button, Flex, IconButton } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   FaFastForward,
   FaPause,
@@ -10,18 +10,25 @@ import {
   FaStepForward,
   FaUndo,
 } from "react-icons/fa";
-import { SolutionStepView } from "./SolutionStepView";
-import { STEPS } from "./SolutionStepView";
-import { useTranslation } from "react-i18next";
+import { useLocation } from "react-router-dom";
+import { STEPS, SolutionStepView } from "./SolutionStepView";
 
 interface LatticeSolutionStepsProps {
   multiplicand: number;
   multiplier: number;
 }
 
+export interface Diagonal {
+  carry?: number;
+  gridDigits: number[];
+  sum: number;
+  sumDigits: number[];
+}
+
 export interface SolutionStep {
   carryTop: number[];
   carryRight: number[];
+  diagonals: Diagonal[];
   multiplicand: number[];
   multiplier: number[];
   lattice?: number[][][];
@@ -39,6 +46,7 @@ function LatticeSolutionSteps({
   const [solution, setSolution] = useState<number[]>([]);
   const [isPlaying, setIsPlaying] = useState(false);
   const [gridSubsteps, setGridSubsteps] = useState(0);
+  const [diagonalSubsteps, setDiagonalSubsteps] = useState(0);
   const [isAllStepsMode, setIsAllStepsMode] = useState(false);
 
   useEffect(() => {
@@ -60,12 +68,18 @@ function LatticeSolutionSteps({
     const totalsLeft = [];
     const carryRight = [];
     const carryTop = [];
+    const diagonals: Diagonal[] = [];
     // imagine extending the diagonals beyond the grid so that every diagonal has the same length, and there are m + n diagonals
     for (
       let i = 0;
       i < multiplicandDigits.length + multiplierDigits.length;
       i++
     ) {
+      const diagonal: Diagonal = { gridDigits: [], sumDigits: [], sum: 0 };
+      if (i > 0) {
+        diagonal.carry = diagonals[i - 1].sumDigits[0];
+      }
+
       let sum = 0;
       // start with the appropriate carry digit
       if (i < multiplierDigits.length) {
@@ -92,7 +106,9 @@ function LatticeSolutionSteps({
           col < multiplicandDigits.length &&
           col >= 0
         ) {
-          sum += lattice[col][row][0];
+          const tensDigit = lattice[col][row][0];
+          sum += tensDigit;
+          diagonal.gridDigits.push(tensDigit);
         }
 
         // add the ones digit of the cell to the left, if it exists
@@ -102,21 +118,16 @@ function LatticeSolutionSteps({
           col - 1 < multiplicandDigits.length &&
           col - 1 >= 0
         ) {
-          sum += lattice[col - 1][row][1];
+          const onesDigit = lattice[col - 1][row][1];
+          sum += onesDigit;
+          diagonal.gridDigits.push(onesDigit);
         }
-
-        // const multiplicandIndex = i - j;
-        // const multiplierIndex = j;
-        // if (
-        //   multiplicandIndex < multiplicandDigits.length &&
-        //   multiplierIndex < multiplierDigits.length
-        // ) {
-        //   sum += lattice[multiplicandIndex][multiplierIndex][1];
-        // }
       }
-      console.log("i", i, "sum", sum);
+      diagonal.sum = sum;
       const digit = sum % 10;
       const carry = Math.floor(sum / 10);
+      diagonal.sumDigits.push(carry);
+      diagonal.sumDigits.push(digit);
       if (i < multiplicandDigits.length) {
         totalsBottom.unshift(digit);
       } else {
@@ -128,6 +139,7 @@ function LatticeSolutionSteps({
       } else if (carryTop.length < multiplicandDigits.length) {
         carryTop.unshift(carry);
       }
+      diagonals.push(diagonal);
     }
 
     const totalsLeftPadded = new Array(
@@ -156,9 +168,12 @@ function LatticeSolutionSteps({
     const steps: SolutionStep[] = [];
     const gridSubsteps = multiplicandDigits.length * multiplierDigits.length;
     setGridSubsteps(gridSubsteps);
+    const diagonalSubsteps =
+      multiplicandDigits.length + multiplierDigits.length;
+    setDiagonalSubsteps(diagonalSubsteps);
     for (
       let stepIndex = 0;
-      stepIndex < STEPS.WRITE_SOLUTION + gridSubsteps;
+      stepIndex < STEPS.WRITE_SOLUTION + gridSubsteps + diagonalSubsteps;
       stepIndex++
     ) {
       const step: SolutionStep = {
@@ -174,6 +189,7 @@ function LatticeSolutionSteps({
         carryRight: [],
         totalsBottom: [],
         totalsLeft: [],
+        diagonals: [],
       };
       if (stepIndex >= STEPS.DRAW_GRID) {
         step.lattice = multiplicandDigits.map(() =>
@@ -193,44 +209,63 @@ function LatticeSolutionSteps({
         }
       }
       if (stepIndex >= STEPS.MULTIPLY_DIGITS + gridSubsteps) {
-        step.totalsBottom = totalsBottom.slice();
-        const carryRightCount =
-          stepIndex >= STEPS.ADD_BOTTOM_TOTALS + gridSubsteps
-            ? multiplierDigits.length
-            : multiplicandDigits.length + 1;
-        for (let i = 0; i < carryRightCount; i++) {
-          step.carryRight[multiplierDigits.length - 1 - i] =
-            carryRight[multiplierDigits.length - 1 - i];
+        // sub steps
+        for (
+          let substepIndex = 0;
+          substepIndex <
+          Math.min(
+            stepIndex - STEPS.DRAW_GRID - gridSubsteps,
+            diagonalSubsteps
+          );
+          substepIndex++
+        ) {
+          const carryRightCount =
+            2 + Math.min(substepIndex, multiplierDigits.length - 2);
+          const carryTopCount = Math.min(
+            substepIndex - carryRightCount + 2,
+            multiplicandDigits.length
+          );
+          for (let i = 0; i < carryRightCount; i++) {
+            step.carryRight[multiplierDigits.length - 1 - i] =
+              carryRight[multiplierDigits.length - 1 - i];
+          }
+          for (let i = 0; i < carryTopCount; i++) {
+            step.carryTop[multiplicandDigits.length - 1 - i] =
+              carryTop[multiplicandDigits.length - 1 - i];
+          }
+          step.diagonals = diagonals.slice(0, substepIndex + 1);
+
+          // incrementally fill in the totals digits from right (end of the array) to left (beginning of the array) acccording to the substepIndex
+          const totalsBottomCount = Math.min(
+            substepIndex + 1,
+            multiplicandDigits.length
+          );
+          step.totalsBottom = Array(
+            multiplicandDigits.length - totalsBottomCount
+          )
+            .fill(undefined)
+            .map(Number)
+            .concat(
+              totalsBottom.slice(
+                multiplicandDigits.length - totalsBottomCount,
+                multiplicandDigits.length
+              )
+            );
+
+          const totalsLeftCount = Math.min(
+            substepIndex + 1 - totalsBottomCount,
+            multiplierDigits.length
+          );
+          step.totalsLeft = Array(multiplierDigits.length - totalsLeftCount)
+            .fill(undefined)
+            .map(Number)
+            .concat(
+              totalsLeftPadded.slice(
+                multiplierDigits.length - totalsLeftCount,
+                multiplierDigits.length
+              )
+            );
         }
-        const carryTopCount =
-          stepIndex >= STEPS.ADD_BOTTOM_TOTALS + gridSubsteps
-            ? multiplicandDigits.length
-            : multiplicandDigits.length - multiplierDigits.length + 1;
-        for (let i = 0; i < carryTopCount; i++) {
-          step.carryTop[multiplicandDigits.length - 1 - i] =
-            carryTop[multiplicandDigits.length - 1 - i];
-        }
-        console.log(
-          "stepIndex",
-          stepIndex,
-          "carryTopCount",
-          carryTopCount,
-          "carryTop",
-          carryTop,
-          "step.carryTop",
-          step.carryTop
-        );
-        console.log(
-          "  carryRightCount",
-          carryRightCount,
-          "carryRight",
-          carryRight,
-          "step.carryRight",
-          step.carryRight
-        );
-      }
-      if (stepIndex >= STEPS.ADD_BOTTOM_TOTALS + gridSubsteps) {
-        step.totalsLeft = totalsLeftPadded.slice();
       }
       steps.push(step);
     }
@@ -359,11 +394,12 @@ function LatticeSolutionSteps({
               currentSolutionStep={step}
               solution={solution}
               gridSubsteps={gridSubsteps}
+              diagonalSubsteps={diagonalSubsteps}
             ></SolutionStepView>
           </Box>
         ))
       ) : (
-        <>
+        <Flex direction="column" gap={3}>
           <Flex direction="row" justify="left" mt={4} gap={3}>
             <IconButton
               aria-label={t("reset", "Reset")}
@@ -407,8 +443,9 @@ function LatticeSolutionSteps({
             currentSolutionStep={solutionSteps[currentStep]}
             solution={solution}
             gridSubsteps={gridSubsteps}
+            diagonalSubsteps={diagonalSubsteps}
           ></SolutionStepView>
-        </>
+        </Flex>
       )}
     </Box>
   );
