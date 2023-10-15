@@ -58,6 +58,8 @@ export const SolutionStepView = ({
         <LatticeGrid
           multiplicand={currentSolutionStep.multiplicand}
           multiplier={currentSolutionStep.multiplier}
+          carryTop={currentSolutionStep.carryTop}
+          carryRight={currentSolutionStep.carryRight}
           lattice={currentSolutionStep.lattice}
           totalsBottom={currentSolutionStep.totalsBottom}
           totalsLeft={currentSolutionStep.totalsLeft}

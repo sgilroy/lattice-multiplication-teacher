@@ -20,6 +20,8 @@ interface LatticeSolutionStepsProps {
 }
 
 export interface SolutionStep {
+  carryTop: number[];
+  carryRight: number[];
   multiplicand: number[];
   multiplier: number[];
   lattice?: number[][][];
@@ -52,16 +54,82 @@ function LatticeSolutionSteps({
         lattice[i][j][1] = product % 10;
       }
     }
-    const product = multiplicand * multiplier;
-    const productString = product.toString();
-    const totalsBottom = productString
-      .slice(productString.length - multiplicandDigits.length)
-      .split("")
-      .map(Number);
-    const totalsLeft = productString
-      .slice(0, productString.length - multiplicandDigits.length)
-      .split("")
-      .map(Number);
+
+    // add up the diagonals, starting from the bottom right
+    const totalsBottom = [];
+    const totalsLeft = [];
+    const carryRight = [];
+    const carryTop = [];
+    // imagine extending the diagonals beyond the grid so that every diagonal has the same length, and there are m + n diagonals
+    for (
+      let i = 0;
+      i < multiplicandDigits.length + multiplierDigits.length;
+      i++
+    ) {
+      let sum = 0;
+      // start with the appropriate carry digit
+      if (i < multiplierDigits.length) {
+        sum = carryRight[0] ? carryRight[0] : 0;
+      } else {
+        sum = carryTop[0];
+      }
+
+      // j is the index within the diagonal, upper right to lower left
+      for (
+        let j = 0;
+        j <= Math.max(multiplicandDigits.length, multiplierDigits.length);
+        j++
+      ) {
+        const row = j;
+        const col =
+          multiplicandDigits.length + multiplierDigits.length - 1 - i - j;
+        // start with the tens digit in grid cell [col, row]
+
+        // add the tens digit of the current cell, if it exists
+        if (
+          row < multiplierDigits.length &&
+          row >= 0 &&
+          col < multiplicandDigits.length &&
+          col >= 0
+        ) {
+          sum += lattice[col][row][0];
+        }
+
+        // add the ones digit of the cell to the left, if it exists
+        if (
+          row < multiplierDigits.length &&
+          row >= 0 &&
+          col - 1 < multiplicandDigits.length &&
+          col - 1 >= 0
+        ) {
+          sum += lattice[col - 1][row][1];
+        }
+
+        // const multiplicandIndex = i - j;
+        // const multiplierIndex = j;
+        // if (
+        //   multiplicandIndex < multiplicandDigits.length &&
+        //   multiplierIndex < multiplierDigits.length
+        // ) {
+        //   sum += lattice[multiplicandIndex][multiplierIndex][1];
+        // }
+      }
+      console.log("i", i, "sum", sum);
+      const digit = sum % 10;
+      const carry = Math.floor(sum / 10);
+      if (i < multiplicandDigits.length) {
+        totalsBottom.unshift(digit);
+      } else {
+        totalsLeft.unshift(digit);
+      }
+
+      if (i < multiplierDigits.length - 1) {
+        carryRight.unshift(carry);
+      } else if (carryTop.length < multiplicandDigits.length) {
+        carryTop.unshift(carry);
+      }
+    }
+
     const totalsLeftPadded = new Array(
       multiplierDigits.length - totalsLeft.length
     )
@@ -102,6 +170,8 @@ function LatticeSolutionSteps({
           stepIndex >= STEPS.WRITE_MULTIPLIER
             ? multiplierDigits
             : Array(multiplierDigits.length).fill(undefined).map(Number),
+        carryTop: [],
+        carryRight: [],
         totalsBottom: [],
         totalsLeft: [],
       };
@@ -124,6 +194,40 @@ function LatticeSolutionSteps({
       }
       if (stepIndex >= STEPS.MULTIPLY_DIGITS + gridSubsteps) {
         step.totalsBottom = totalsBottom.slice();
+        const carryRightCount =
+          stepIndex >= STEPS.ADD_BOTTOM_TOTALS + gridSubsteps
+            ? multiplierDigits.length
+            : multiplicandDigits.length + 1;
+        for (let i = 0; i < carryRightCount; i++) {
+          step.carryRight[multiplierDigits.length - 1 - i] =
+            carryRight[multiplierDigits.length - 1 - i];
+        }
+        const carryTopCount =
+          stepIndex >= STEPS.ADD_BOTTOM_TOTALS + gridSubsteps
+            ? multiplicandDigits.length
+            : multiplicandDigits.length - multiplierDigits.length + 1;
+        for (let i = 0; i < carryTopCount; i++) {
+          step.carryTop[multiplicandDigits.length - 1 - i] =
+            carryTop[multiplicandDigits.length - 1 - i];
+        }
+        console.log(
+          "stepIndex",
+          stepIndex,
+          "carryTopCount",
+          carryTopCount,
+          "carryTop",
+          carryTop,
+          "step.carryTop",
+          step.carryTop
+        );
+        console.log(
+          "  carryRightCount",
+          carryRightCount,
+          "carryRight",
+          carryRight,
+          "step.carryRight",
+          step.carryRight
+        );
       }
       if (stepIndex >= STEPS.ADD_BOTTOM_TOTALS + gridSubsteps) {
         step.totalsLeft = totalsLeftPadded.slice();

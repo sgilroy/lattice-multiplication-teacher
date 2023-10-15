@@ -4,6 +4,8 @@ import { keyframes } from "@emotion/react";
 interface LatticeGridProps {
   multiplicand: number[];
   multiplier: number[];
+  carryTop: number[];
+  carryRight: number[];
   lattice?: number[][][];
   totalsBottom: number[];
   totalsLeft: number[];
@@ -58,6 +60,8 @@ const CellDiagonal = ({
 function LatticeGrid({
   multiplicand,
   multiplier,
+  carryTop,
+  carryRight,
   lattice,
   totalsBottom,
   totalsLeft,
@@ -106,12 +110,12 @@ function LatticeGrid({
               w={`${cellSize}px`}
               h={`${cellSize}px`}
               display="flex"
-              alignItems="flex-end"
+              position="relative"
               overflow="hidden"
             >
               {!Number.isNaN(digit) && (
                 <Text
-                  fontSize="sm"
+                  fontSize="md"
                   fontWeight="bold"
                   width={`${cellSize}px`}
                   textAlign="center"
@@ -125,6 +129,25 @@ function LatticeGrid({
                   }}
                 >
                   {digit}
+                </Text>
+              )}
+              {Number.isInteger(carryTop[index]) && (
+                <Text
+                  fontSize="sm"
+                  position="absolute"
+                  top={`${cellSize * 0.75}px`}
+                  left={`${cellSize * 0.75}px`}
+                  transform="translate(-50%, -50%)"
+                  whiteSpace="nowrap"
+                  overflow="hidden"
+                  css={{
+                    clipPath: "inset(0 100% 0 0)",
+                    animation: `0.2s ${revealElement} forwards ${
+                      (numRows - index) * 2
+                    }00ms ease-in-out`,
+                  }}
+                >
+                  {carryTop[index]}
                 </Text>
               )}
             </Box>
@@ -272,11 +295,15 @@ function LatticeGrid({
                 w={`${cellSize}px`}
                 h={`${cellSize}px`}
                 display="flex"
-                alignItems="center"
+                position="relative"
               >
                 {!Number.isNaN(digit) && (
                   <Text
-                    fontSize="sm"
+                    position="absolute"
+                    top={`${cellSize * 0.5}px`}
+                    left={`${cellSize * 0.75}px`}
+                    transform="translate(-50%, -50%)"
+                    fontSize="md"
                     fontWeight="bold"
                     marginLeft={1}
                     css={{
@@ -287,6 +314,23 @@ function LatticeGrid({
                     }}
                   >
                     {digit}
+                  </Text>
+                )}
+                {Number.isInteger(carryRight[rowIndex]) && (
+                  <Text
+                    fontSize="sm"
+                    position="absolute"
+                    top={`${cellSize * 0.25}px`}
+                    left={`${cellSize * 0.25}px`}
+                    transform="translate(-50%, -50%)"
+                    css={{
+                      clipPath: "inset(0 100% 0 0)",
+                      animation: `0.2s ${revealElement} forwards ${
+                        (numRows - rowIndex) * 2
+                      }00ms ease-in-out`,
+                    }}
+                  >
+                    {carryRight[rowIndex]}
                   </Text>
                 )}
               </Box>

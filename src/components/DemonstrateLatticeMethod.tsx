@@ -20,7 +20,7 @@ import i18n from "../i18n";
 
 function DemonstrateLatticeMethod() {
   const [multiplicand, setMultiplicand] = useState<number | "">(321);
-  const [multiplier, setMultiplier] = useState<number | "">(12);
+  const [multiplier, setMultiplier] = useState<number | "">(92);
   const { colorMode, toggleColorMode } = useColorMode();
   const { t } = useTranslation();
 
