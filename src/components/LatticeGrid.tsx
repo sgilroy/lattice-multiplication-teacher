@@ -17,7 +17,7 @@ function getDiagonalDelay(c: number, r: number, m: number, n: number) {
   // Iterate over each cell and check if it's southeast of the line or on the line but to the northeast
   for (let i = 1; i <= m; i++) {
     for (let j = 1; j <= n; j++) {
-      if (i < -j + r + c || (i === -j + r + c && j > c)) {
+      if (i > -j + r + c || (i === -j + r + c && j > c)) {
         count++;
       }
     }
